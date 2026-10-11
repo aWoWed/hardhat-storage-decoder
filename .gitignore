@@ -1,0 +1,24 @@
+node_modules/
+dist/
+coverage/
+*.tgz
+
+# Hardhat fixture-workspace artifacts
+test/fixtures/*/artifacts/
+test/fixtures/*/cache/
+test/fixtures/*/node_modules/
+test/fixtures/*/contracts/
+test/fixtures/*/types/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# tsbuildinfo
+*.tsbuildinfo
+
+# Local agent working state (backups, logs, review reports)
+.omc/

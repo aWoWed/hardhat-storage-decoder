@@ -1,0 +1,36 @@
+{
+  // Base config. Covers the Hardhat-free core (`src/core/**`), the throwing root entry,
+  // the unit test suite, and the repo's build scripts.
+  //
+  // It deliberately does NOT include `src/hardhat2/**` or `src/hardhat3/**`: those two trees
+  // import the bare `hardhat` specifier, which resolves to a DIFFERENT physical package for
+  // each major. They are typechecked by `tsconfig.hardhat2.json` / `tsconfig.hardhat3.json`,
+  // which remap that specifier via `paths`. See `docs/build-internals.md`.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": false,
+
+    "declaration": true,
+    "sourceMap": true,
+    "noEmit": true,
+
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+
+    "resolveJsonModule": true
+  },
+  "include": ["src/index.ts", "src/core/**/*.ts", "test/unit/**/*.ts", "scripts/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test/fixtures"]
+}
