@@ -1,0 +1,47 @@
+{
+  // ---------------------------------------------------------------------------------------
+  // DO NOT "SIMPLIFY" THIS FILE. The `paths` block below is load-bearing and was verified
+  // empirically against a real `hardhat@2.29.0` install. See `docs/build-internals.md`.
+  //
+  // Hardhat 2 and Hardhat 3 cannot both resolve as the package named `hardhat` in one
+  // `node_modules`. The root install therefore carries BOTH majors under npm aliases:
+  //     "hardhat-v2": "npm:hardhat@^2.29.0"
+  //     "hardhat-v3": "npm:hardhat@^3.13.0"
+  // and this config remaps the bare `hardhat` specifier onto the v2 alias for TYPE-CHECKING
+  // ONLY. `src/hardhat2/**` still writes `import ... from "hardhat"`, so the EMITTED .d.ts
+  // references the bare specifier too — which is what a real consumer (who has exactly one
+  // hardhat major installed for real) needs.
+  //
+  // Two details that are NOT symmetric with tsconfig.hardhat3.json:
+  //   1. Both a `hardhat` key AND a `hardhat/*` wildcard key are required. A `paths` key
+  //      without `/*` never matches a subpath import, so mapping only `hardhat` produces
+  //      TS2307 on `hardhat/config` and `hardhat/types/runtime`.
+  //   2. HH2 has NO "exports" field and ships its .d.ts at the package ROOT, so the mapping
+  //      targets the package directory directly. (HH3's real files live under dist/src, and
+  //      TypeScript's `paths` substitution does not consult a package's own "exports" map —
+  //      hence the different target there.)
+  //   3. HH2 is CommonJS, so module/moduleResolution are commonjs/node here, NOT nodenext.
+  // ---------------------------------------------------------------------------------------
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "hardhat": ["./node_modules/hardhat-v2"],
+      "hardhat/*": ["./node_modules/hardhat-v2/*"]
+    }
+  },
+  // The augmentation gate is listed by exact filename, NOT by a `test/types/**` glob: the HH3
+  // gate lives in the same folder and imports `hardhat` under the OTHER major's `paths`, so a
+  // glob would drag it in here and fail. The adapter tests are listed by exact folder for the
+  // same reason: `test/adapters/hh3` belongs to the other major.
+  "include": [
+    "src/core/**/*.ts",
+    "src/shared/**/*.ts",
+    "src/hardhat2/**/*.ts",
+    "test/types/hardhat2-augmentation.test-d.ts",
+    "test/adapters/hh2"
+  ],
+  "exclude": ["node_modules", "dist", "test/fixtures"]
+}

@@ -1,0 +1,21 @@
+{
+  // Hardhat 3 projects are ESM (`"type": "module"`), so `nodenext` is the only resolution
+  // mode that models this project honestly: relative imports carry `.js` extensions and the
+  // package under test is reached through its `exports` map's `import` condition — a
+  // different code path from the Hardhat 2 fixture's `require` condition, which is the point
+  // of having both.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "types": ["node", "mocha", "chai"]
+  },
+  "include": ["hardhat.config.ts", "test/**/*.ts"]
+}

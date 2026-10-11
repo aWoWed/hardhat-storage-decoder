@@ -1,0 +1,36 @@
+{
+  // ---------------------------------------------------------------------------------------
+  // DO NOT "SIMPLIFY" THIS FILE, and do NOT make it match tsconfig.hardhat2.json. The two
+  // are asymmetric on purpose; both forms were verified empirically against real
+  // `hardhat@2.29.0` / `hardhat@3.13.0` installs. See `docs/build-internals.md`.
+  //
+  // Why the targets differ from the HH2 config:
+  //   - HH3 is ESM ("type": "module") and routes its public surface through an "exports"
+  //     map into `dist/src`. TypeScript's `paths` substitution does NOT consult a package's
+  //     own "exports" field, so pointing at `./node_modules/hardhat-v3` finds nothing usable.
+  //     The mapping must reach into the real file locations under `dist/src` directly.
+  //   - Hence `hardhat` -> the concrete `dist/src/index.d.ts`, and `hardhat/*` ->
+  //     `dist/src/*` for subpath imports such as `hardhat/types/network`.
+  //   - HH3 needs module/moduleResolution = nodenext (HH2 needs commonjs/node).
+  //
+  // As with HH2, this affects COMPILE-TIME resolution only: `src/hardhat3/**` imports the
+  // bare `hardhat` specifier and the emitted .d.ts keeps referencing it.
+  //
+  // NOTE for whoever implements the HH3 adapter: HH3's augmentation target is the
+  // `NetworkConnection` interface in `hardhat/types/network`, and the type-parameter list
+  // (`<ChainTypeT extends ChainType | string = DefaultChainType>`) must match the upstream
+  // declaration EXACTLY or TypeScript raises TS2428.
+  // ---------------------------------------------------------------------------------------
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "baseUrl": ".",
+    "paths": {
+      "hardhat": ["./node_modules/hardhat-v3/dist/src/index.d.ts"],
+      "hardhat/*": ["./node_modules/hardhat-v3/dist/src/*"]
+    }
+  },
+  "include": ["src/core/**/*.ts", "src/shared/**/*.ts", "src/hardhat3/**/*.ts", "test/adapters/hh3/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test/fixtures"]
+}

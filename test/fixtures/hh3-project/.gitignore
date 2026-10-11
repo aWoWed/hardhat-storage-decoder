@@ -1,0 +1,8 @@
+# Copied in by `../copy-fixtures.mjs`; the originals live in ../contracts and ../e2e.
+contracts/
+test/e2e/shared/
+node_modules/
+artifacts/
+cache/
+types/
+package-lock.json

@@ -1,0 +1,1829 @@
+{
+  "solcVersion": "0.8.26+commit.8a97fa7a.Emscripten.clang",
+  "contracts": {
+    "ArrayStorage.sol:ArrayStorage": {
+      "contractName": "ArrayStorage",
+      "sourceName": "ArrayStorage.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 25,
+            "contract": "ArrayStorage.sol:ArrayStorage",
+            "label": "addresses",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_array(t_address)dyn_storage"
+          },
+          {
+            "astId": 29,
+            "contract": "ArrayStorage.sol:ArrayStorage",
+            "label": "exactPacked",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint128)dyn_storage"
+          },
+          {
+            "astId": 33,
+            "contract": "ArrayStorage.sol:ArrayStorage",
+            "label": "gapPacked",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_array(t_uint96)dyn_storage"
+          },
+          {
+            "astId": 37,
+            "contract": "ArrayStorage.sol:ArrayStorage",
+            "label": "words",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_array(t_uint256)dyn_storage"
+          },
+          {
+            "astId": 42,
+            "contract": "ArrayStorage.sol:ArrayStorage",
+            "label": "fixedPacked",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_array(t_uint8)10_storage"
+          },
+          {
+            "astId": 47,
+            "contract": "ArrayStorage.sol:ArrayStorage",
+            "label": "fixedWords",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_array(t_uint256)3_storage"
+          },
+          {
+            "astId": 52,
+            "contract": "ArrayStorage.sol:ArrayStorage",
+            "label": "pairs",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_array(t_struct(Pair)13_storage)dyn_storage"
+          },
+          {
+            "astId": 57,
+            "contract": "ArrayStorage.sol:ArrayStorage",
+            "label": "nested",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_array(t_array(t_uint256)dyn_storage)dyn_storage"
+          },
+          {
+            "astId": 62,
+            "contract": "ArrayStorage.sol:ArrayStorage",
+            "label": "tinyPairs",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_array(t_struct(TinyPair)21_storage)dyn_storage"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "encoding": "inplace",
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "base": "t_address",
+            "encoding": "dynamic_array",
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_array(t_uint256)dyn_storage)dyn_storage": {
+            "base": "t_array(t_uint256)dyn_storage",
+            "encoding": "dynamic_array",
+            "label": "uint256[][]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(Pair)13_storage)dyn_storage": {
+            "base": "t_struct(Pair)13_storage",
+            "encoding": "dynamic_array",
+            "label": "struct ArrayStorage.Pair[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(TinyPair)21_storage)dyn_storage": {
+            "base": "t_struct(TinyPair)21_storage",
+            "encoding": "dynamic_array",
+            "label": "struct ArrayStorage.TinyPair[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint128)dyn_storage": {
+            "base": "t_uint128",
+            "encoding": "dynamic_array",
+            "label": "uint128[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)3_storage": {
+            "base": "t_uint256",
+            "encoding": "inplace",
+            "label": "uint256[3]",
+            "numberOfBytes": "96"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "base": "t_uint256",
+            "encoding": "dynamic_array",
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint8)10_storage": {
+            "base": "t_uint8",
+            "encoding": "inplace",
+            "label": "uint8[10]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint96)dyn_storage": {
+            "base": "t_uint96",
+            "encoding": "dynamic_array",
+            "label": "uint96[]",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Pair)13_storage": {
+            "encoding": "inplace",
+            "label": "struct ArrayStorage.Pair",
+            "members": [
+              {
+                "astId": 6,
+                "contract": "ArrayStorage.sol:ArrayStorage",
+                "label": "left",
+                "offset": 0,
+                "slot": "0",
+                "type": "t_uint128"
+              },
+              {
+                "astId": 9,
+                "contract": "ArrayStorage.sol:ArrayStorage",
+                "label": "right",
+                "offset": 16,
+                "slot": "0",
+                "type": "t_uint128"
+              },
+              {
+                "astId": 12,
+                "contract": "ArrayStorage.sol:ArrayStorage",
+                "label": "who",
+                "offset": 0,
+                "slot": "1",
+                "type": "t_address"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(TinyPair)21_storage": {
+            "encoding": "inplace",
+            "label": "struct ArrayStorage.TinyPair",
+            "members": [
+              {
+                "astId": 17,
+                "contract": "ArrayStorage.sol:ArrayStorage",
+                "label": "a",
+                "offset": 0,
+                "slot": "0",
+                "type": "t_uint8"
+              },
+              {
+                "astId": 20,
+                "contract": "ArrayStorage.sol:ArrayStorage",
+                "label": "b",
+                "offset": 1,
+                "slot": "0",
+                "type": "t_uint8"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint128": {
+            "encoding": "inplace",
+            "label": "uint128",
+            "numberOfBytes": "16"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "encoding": "inplace",
+            "label": "uint8",
+            "numberOfBytes": "1"
+          },
+          "t_uint96": {
+            "encoding": "inplace",
+            "label": "uint96",
+            "numberOfBytes": "12"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "25": "ArrayStorage.sol:ArrayStorage",
+        "29": "ArrayStorage.sol:ArrayStorage",
+        "33": "ArrayStorage.sol:ArrayStorage",
+        "37": "ArrayStorage.sol:ArrayStorage",
+        "42": "ArrayStorage.sol:ArrayStorage",
+        "47": "ArrayStorage.sol:ArrayStorage",
+        "52": "ArrayStorage.sol:ArrayStorage",
+        "57": "ArrayStorage.sol:ArrayStorage",
+        "62": "ArrayStorage.sol:ArrayStorage"
+      }
+    },
+    "EnumAndContractStorage.sol:EnumAndContractStorage": {
+      "contractName": "EnumAndContractStorage",
+      "sourceName": "EnumAndContractStorage.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 342,
+            "contract": "EnumAndContractStorage.sol:EnumAndContractStorage",
+            "label": "status",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_enum(Status)338"
+          },
+          {
+            "astId": 346,
+            "contract": "EnumAndContractStorage.sol:EnumAndContractStorage",
+            "label": "token",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_contract(IERC20Like)332"
+          },
+          {
+            "astId": 352,
+            "contract": "EnumAndContractStorage.sol:EnumAndContractStorage",
+            "label": "byToken",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_contract(IERC20Like)332,t_uint256)"
+          },
+          {
+            "astId": 358,
+            "contract": "EnumAndContractStorage.sol:EnumAndContractStorage",
+            "label": "byStatus",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_enum(Status)338,t_uint256)"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Like)332": {
+            "encoding": "inplace",
+            "label": "contract IERC20Like",
+            "numberOfBytes": "20"
+          },
+          "t_enum(Status)338": {
+            "encoding": "inplace",
+            "label": "enum EnumAndContractStorage.Status",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_contract(IERC20Like)332,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_contract(IERC20Like)332",
+            "label": "mapping(contract IERC20Like => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_mapping(t_enum(Status)338,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_enum(Status)338",
+            "label": "mapping(enum EnumAndContractStorage.Status => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "342": "EnumAndContractStorage.sol:EnumAndContractStorage",
+        "346": "EnumAndContractStorage.sol:EnumAndContractStorage",
+        "352": "EnumAndContractStorage.sol:EnumAndContractStorage",
+        "358": "EnumAndContractStorage.sol:EnumAndContractStorage"
+      }
+    },
+    "EnumAndContractStorage.sol:IERC20Like": {
+      "contractName": "IERC20Like",
+      "sourceName": "EnumAndContractStorage.sol",
+      "storageLayout": {
+        "storage": [],
+        "types": null
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {}
+    },
+    "InheritedStorage.sol:BaseA": {
+      "contractName": "BaseA",
+      "sourceName": "InheritedStorage.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 421,
+            "contract": "InheritedStorage.sol:BaseA",
+            "label": "baseValue",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 424,
+            "contract": "InheritedStorage.sol:BaseA",
+            "label": "basePacked",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint128"
+          }
+        ],
+        "types": {
+          "t_uint128": {
+            "encoding": "inplace",
+            "label": "uint128",
+            "numberOfBytes": "16"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "421": "InheritedStorage.sol:BaseA",
+        "424": "InheritedStorage.sol:BaseA"
+      }
+    },
+    "InheritedStorage.sol:BaseB": {
+      "contractName": "BaseB",
+      "sourceName": "InheritedStorage.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 421,
+            "contract": "InheritedStorage.sol:BaseB",
+            "label": "baseValue",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 424,
+            "contract": "InheritedStorage.sol:BaseB",
+            "label": "basePacked",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 448,
+            "contract": "InheritedStorage.sol:BaseB",
+            "label": "midPacked",
+            "offset": 16,
+            "slot": "1",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 451,
+            "contract": "InheritedStorage.sol:BaseB",
+            "label": "midAddress",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "encoding": "inplace",
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_uint128": {
+            "encoding": "inplace",
+            "label": "uint128",
+            "numberOfBytes": "16"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "421": "InheritedStorage.sol:BaseA",
+        "424": "InheritedStorage.sol:BaseA",
+        "448": "InheritedStorage.sol:BaseB",
+        "451": "InheritedStorage.sol:BaseB"
+      }
+    },
+    "InheritedStorage.sol:InheritedStorage": {
+      "contractName": "InheritedStorage",
+      "sourceName": "InheritedStorage.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 421,
+            "contract": "InheritedStorage.sol:InheritedStorage",
+            "label": "baseValue",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 424,
+            "contract": "InheritedStorage.sol:InheritedStorage",
+            "label": "basePacked",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 448,
+            "contract": "InheritedStorage.sol:InheritedStorage",
+            "label": "midPacked",
+            "offset": 16,
+            "slot": "1",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 451,
+            "contract": "InheritedStorage.sol:InheritedStorage",
+            "label": "midAddress",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address"
+          },
+          {
+            "astId": 475,
+            "contract": "InheritedStorage.sol:InheritedStorage",
+            "label": "childValue",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 480,
+            "contract": "InheritedStorage.sol:InheritedStorage",
+            "label": "childMap",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_address,t_uint256)"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "encoding": "inplace",
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_address",
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_uint128": {
+            "encoding": "inplace",
+            "label": "uint128",
+            "numberOfBytes": "16"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "421": "InheritedStorage.sol:BaseA",
+        "424": "InheritedStorage.sol:BaseA",
+        "448": "InheritedStorage.sol:BaseB",
+        "451": "InheritedStorage.sol:BaseB",
+        "475": "InheritedStorage.sol:InheritedStorage",
+        "480": "InheritedStorage.sol:InheritedStorage"
+      }
+    },
+    "MappingToArrayStorage.sol:MappingToArrayStorage": {
+      "contractName": "MappingToArrayStorage",
+      "sourceName": "MappingToArrayStorage.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 516,
+            "contract": "MappingToArrayStorage.sol:MappingToArrayStorage",
+            "label": "listByAddress",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_array(t_uint256)dyn_storage)"
+          },
+          {
+            "astId": 522,
+            "contract": "MappingToArrayStorage.sol:MappingToArrayStorage",
+            "label": "packedListByAddress",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_array(t_uint96)dyn_storage)"
+          },
+          {
+            "astId": 530,
+            "contract": "MappingToArrayStorage.sol:MappingToArrayStorage",
+            "label": "nestedListByAddress",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_array(t_uint256)dyn_storage))"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "encoding": "inplace",
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "base": "t_uint256",
+            "encoding": "dynamic_array",
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint96)dyn_storage": {
+            "base": "t_uint96",
+            "encoding": "dynamic_array",
+            "label": "uint96[]",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {
+            "encoding": "mapping",
+            "key": "t_address",
+            "label": "mapping(address => uint256[])",
+            "numberOfBytes": "32",
+            "value": "t_array(t_uint256)dyn_storage"
+          },
+          "t_mapping(t_address,t_array(t_uint96)dyn_storage)": {
+            "encoding": "mapping",
+            "key": "t_address",
+            "label": "mapping(address => uint96[])",
+            "numberOfBytes": "32",
+            "value": "t_array(t_uint96)dyn_storage"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_array(t_uint256)dyn_storage))": {
+            "encoding": "mapping",
+            "key": "t_address",
+            "label": "mapping(address => mapping(uint256 => uint256[]))",
+            "numberOfBytes": "32",
+            "value": "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)"
+          },
+          "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)": {
+            "encoding": "mapping",
+            "key": "t_uint256",
+            "label": "mapping(uint256 => uint256[])",
+            "numberOfBytes": "32",
+            "value": "t_array(t_uint256)dyn_storage"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint96": {
+            "encoding": "inplace",
+            "label": "uint96",
+            "numberOfBytes": "12"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "516": "MappingToArrayStorage.sol:MappingToArrayStorage",
+        "522": "MappingToArrayStorage.sol:MappingToArrayStorage",
+        "530": "MappingToArrayStorage.sol:MappingToArrayStorage"
+      }
+    },
+    "NestedMapping.sol:NestedMapping": {
+      "contractName": "NestedMapping",
+      "sourceName": "NestedMapping.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 654,
+            "contract": "NestedMapping.sol:NestedMapping",
+            "label": "triple",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))"
+          },
+          {
+            "astId": 659,
+            "contract": "NestedMapping.sol:NestedMapping",
+            "label": "byName",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_string_memory_ptr,t_uint256)"
+          },
+          {
+            "astId": 664,
+            "contract": "NestedMapping.sol:NestedMapping",
+            "label": "byBlob",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_bytes_memory_ptr,t_uint256)"
+          },
+          {
+            "astId": 669,
+            "contract": "NestedMapping.sol:NestedMapping",
+            "label": "bySigned",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_int256,t_uint256)"
+          },
+          {
+            "astId": 674,
+            "contract": "NestedMapping.sol:NestedMapping",
+            "label": "bySelector",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_bytes4,t_uint256)"
+          },
+          {
+            "astId": 679,
+            "contract": "NestedMapping.sol:NestedMapping",
+            "label": "byFlag",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_bool,t_uint256)"
+          },
+          {
+            "astId": 684,
+            "contract": "NestedMapping.sol:NestedMapping",
+            "label": "bySmallUint",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint8,t_uint256)"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "encoding": "inplace",
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "encoding": "inplace",
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes4": {
+            "encoding": "inplace",
+            "label": "bytes4",
+            "numberOfBytes": "4"
+          },
+          "t_bytes_memory_ptr": {
+            "encoding": "bytes",
+            "label": "bytes",
+            "numberOfBytes": "32"
+          },
+          "t_int256": {
+            "encoding": "inplace",
+            "label": "int256",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))": {
+            "encoding": "mapping",
+            "key": "t_address",
+            "label": "mapping(address => mapping(address => mapping(uint256 => uint256)))",
+            "numberOfBytes": "32",
+            "value": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "encoding": "mapping",
+            "key": "t_address",
+            "label": "mapping(address => mapping(uint256 => uint256))",
+            "numberOfBytes": "32",
+            "value": "t_mapping(t_uint256,t_uint256)"
+          },
+          "t_mapping(t_bool,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_bool",
+            "label": "mapping(bool => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_mapping(t_bytes4,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_bytes4",
+            "label": "mapping(bytes4 => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_mapping(t_bytes_memory_ptr,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_bytes_memory_ptr",
+            "label": "mapping(bytes => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_mapping(t_int256,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_int256",
+            "label": "mapping(int256 => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_mapping(t_string_memory_ptr,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_string_memory_ptr",
+            "label": "mapping(string => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_uint256",
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_mapping(t_uint8,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_uint8",
+            "label": "mapping(uint8 => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_string_memory_ptr": {
+            "encoding": "bytes",
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "encoding": "inplace",
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "654": "NestedMapping.sol:NestedMapping",
+        "659": "NestedMapping.sol:NestedMapping",
+        "664": "NestedMapping.sol:NestedMapping",
+        "669": "NestedMapping.sol:NestedMapping",
+        "674": "NestedMapping.sol:NestedMapping",
+        "679": "NestedMapping.sol:NestedMapping",
+        "684": "NestedMapping.sol:NestedMapping"
+      }
+    },
+    "PackedStorage.sol:PackedStorage": {
+      "contractName": "PackedStorage",
+      "sourceName": "PackedStorage.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 804,
+            "contract": "PackedStorage.sol:PackedStorage",
+            "label": "a",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint128"
+          },
+          {
+            "astId": 807,
+            "contract": "PackedStorage.sol:PackedStorage",
+            "label": "b",
+            "offset": 16,
+            "slot": "0",
+            "type": "t_uint64"
+          },
+          {
+            "astId": 810,
+            "contract": "PackedStorage.sol:PackedStorage",
+            "label": "c",
+            "offset": 24,
+            "slot": "0",
+            "type": "t_uint32"
+          },
+          {
+            "astId": 813,
+            "contract": "PackedStorage.sol:PackedStorage",
+            "label": "d",
+            "offset": 28,
+            "slot": "0",
+            "type": "t_bool"
+          },
+          {
+            "astId": 816,
+            "contract": "PackedStorage.sol:PackedStorage",
+            "label": "e",
+            "offset": 29,
+            "slot": "0",
+            "type": "t_uint8"
+          },
+          {
+            "astId": 819,
+            "contract": "PackedStorage.sol:PackedStorage",
+            "label": "f",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_int128"
+          },
+          {
+            "astId": 822,
+            "contract": "PackedStorage.sol:PackedStorage",
+            "label": "g",
+            "offset": 16,
+            "slot": "1",
+            "type": "t_bytes4"
+          },
+          {
+            "astId": 825,
+            "contract": "PackedStorage.sol:PackedStorage",
+            "label": "h",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address"
+          },
+          {
+            "astId": 828,
+            "contract": "PackedStorage.sol:PackedStorage",
+            "label": "i",
+            "offset": 20,
+            "slot": "2",
+            "type": "t_uint96"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "encoding": "inplace",
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "encoding": "inplace",
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes4": {
+            "encoding": "inplace",
+            "label": "bytes4",
+            "numberOfBytes": "4"
+          },
+          "t_int128": {
+            "encoding": "inplace",
+            "label": "int128",
+            "numberOfBytes": "16"
+          },
+          "t_uint128": {
+            "encoding": "inplace",
+            "label": "uint128",
+            "numberOfBytes": "16"
+          },
+          "t_uint32": {
+            "encoding": "inplace",
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint64": {
+            "encoding": "inplace",
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_uint8": {
+            "encoding": "inplace",
+            "label": "uint8",
+            "numberOfBytes": "1"
+          },
+          "t_uint96": {
+            "encoding": "inplace",
+            "label": "uint96",
+            "numberOfBytes": "12"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "804": "PackedStorage.sol:PackedStorage",
+        "807": "PackedStorage.sol:PackedStorage",
+        "810": "PackedStorage.sol:PackedStorage",
+        "813": "PackedStorage.sol:PackedStorage",
+        "816": "PackedStorage.sol:PackedStorage",
+        "819": "PackedStorage.sol:PackedStorage",
+        "822": "PackedStorage.sol:PackedStorage",
+        "825": "PackedStorage.sol:PackedStorage",
+        "828": "PackedStorage.sol:PackedStorage"
+      }
+    },
+    "SimpleStorage.sol:SimpleStorage": {
+      "contractName": "SimpleStorage",
+      "sourceName": "SimpleStorage.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 904,
+            "contract": "SimpleStorage.sol:SimpleStorage",
+            "label": "count",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 907,
+            "contract": "SimpleStorage.sol:SimpleStorage",
+            "label": "signedCount",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_int256"
+          },
+          {
+            "astId": 910,
+            "contract": "SimpleStorage.sol:SimpleStorage",
+            "label": "flag",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_bool"
+          },
+          {
+            "astId": 913,
+            "contract": "SimpleStorage.sol:SimpleStorage",
+            "label": "owner",
+            "offset": 1,
+            "slot": "2",
+            "type": "t_address"
+          },
+          {
+            "astId": 916,
+            "contract": "SimpleStorage.sol:SimpleStorage",
+            "label": "digest",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_bytes32"
+          },
+          {
+            "astId": 919,
+            "contract": "SimpleStorage.sol:SimpleStorage",
+            "label": "selector",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_bytes4"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "encoding": "inplace",
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "encoding": "inplace",
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "encoding": "inplace",
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_bytes4": {
+            "encoding": "inplace",
+            "label": "bytes4",
+            "numberOfBytes": "4"
+          },
+          "t_int256": {
+            "encoding": "inplace",
+            "label": "int256",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [
+        "MAX_COUNT",
+        "deployer"
+      ],
+      "declaringContracts": {
+        "904": "SimpleStorage.sol:SimpleStorage",
+        "907": "SimpleStorage.sol:SimpleStorage",
+        "910": "SimpleStorage.sol:SimpleStorage",
+        "913": "SimpleStorage.sol:SimpleStorage",
+        "916": "SimpleStorage.sol:SimpleStorage",
+        "919": "SimpleStorage.sol:SimpleStorage"
+      }
+    },
+    "StringStorage.sol:StringStorage": {
+      "contractName": "StringStorage",
+      "sourceName": "StringStorage.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 995,
+            "contract": "StringStorage.sol:StringStorage",
+            "label": "shortText",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 998,
+            "contract": "StringStorage.sol:StringStorage",
+            "label": "longText",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 1001,
+            "contract": "StringStorage.sol:StringStorage",
+            "label": "shortBlob",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_bytes_storage"
+          },
+          {
+            "astId": 1004,
+            "contract": "StringStorage.sol:StringStorage",
+            "label": "longBlob",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_bytes_storage"
+          },
+          {
+            "astId": 1009,
+            "contract": "StringStorage.sol:StringStorage",
+            "label": "textByAddress",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_address,t_string_storage)"
+          },
+          {
+            "astId": 1013,
+            "contract": "StringStorage.sol:StringStorage",
+            "label": "texts",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_array(t_string_storage)dyn_storage"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "encoding": "inplace",
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_string_storage)dyn_storage": {
+            "base": "t_string_storage",
+            "encoding": "dynamic_array",
+            "label": "string[]",
+            "numberOfBytes": "32"
+          },
+          "t_bytes_storage": {
+            "encoding": "bytes",
+            "label": "bytes",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_string_storage)": {
+            "encoding": "mapping",
+            "key": "t_address",
+            "label": "mapping(address => string)",
+            "numberOfBytes": "32",
+            "value": "t_string_storage"
+          },
+          "t_string_storage": {
+            "encoding": "bytes",
+            "label": "string",
+            "numberOfBytes": "32"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "995": "StringStorage.sol:StringStorage",
+        "998": "StringStorage.sol:StringStorage",
+        "1001": "StringStorage.sol:StringStorage",
+        "1004": "StringStorage.sol:StringStorage",
+        "1009": "StringStorage.sol:StringStorage",
+        "1013": "StringStorage.sol:StringStorage"
+      }
+    },
+    "StructStorage.sol:StructStorage": {
+      "contractName": "StructStorage",
+      "sourceName": "StructStorage.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 1147,
+            "contract": "StructStorage.sol:StructStorage",
+            "label": "records",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_array(t_struct(Inner)1128_storage)dyn_storage)"
+          },
+          {
+            "astId": 1151,
+            "contract": "StructStorage.sol:StructStorage",
+            "label": "outer",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_struct(Outer)1140_storage"
+          },
+          {
+            "astId": 1157,
+            "contract": "StructStorage.sol:StructStorage",
+            "label": "outers",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_mapping(t_uint256,t_struct(Outer)1140_storage)"
+          },
+          {
+            "astId": 1163,
+            "contract": "StructStorage.sol:StructStorage",
+            "label": "fixedInners",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_array(t_struct(Inner)1128_storage)2_storage"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "encoding": "inplace",
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_struct(Inner)1128_storage)2_storage": {
+            "base": "t_struct(Inner)1128_storage",
+            "encoding": "inplace",
+            "label": "struct StructStorage.Inner[2]",
+            "numberOfBytes": "192"
+          },
+          "t_array(t_struct(Inner)1128_storage)dyn_storage": {
+            "base": "t_struct(Inner)1128_storage",
+            "encoding": "dynamic_array",
+            "label": "struct StructStorage.Inner[]",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_array(t_struct(Inner)1128_storage)dyn_storage)": {
+            "encoding": "mapping",
+            "key": "t_address",
+            "label": "mapping(address => struct StructStorage.Inner[])",
+            "numberOfBytes": "32",
+            "value": "t_array(t_struct(Inner)1128_storage)dyn_storage"
+          },
+          "t_mapping(t_uint256,t_struct(Outer)1140_storage)": {
+            "encoding": "mapping",
+            "key": "t_uint256",
+            "label": "mapping(uint256 => struct StructStorage.Outer)",
+            "numberOfBytes": "32",
+            "value": "t_struct(Outer)1140_storage"
+          },
+          "t_struct(Inner)1128_storage": {
+            "encoding": "inplace",
+            "label": "struct StructStorage.Inner",
+            "members": [
+              {
+                "astId": 1118,
+                "contract": "StructStorage.sol:StructStorage",
+                "label": "a",
+                "offset": 0,
+                "slot": "0",
+                "type": "t_uint128"
+              },
+              {
+                "astId": 1121,
+                "contract": "StructStorage.sol:StructStorage",
+                "label": "b",
+                "offset": 16,
+                "slot": "0",
+                "type": "t_uint128"
+              },
+              {
+                "astId": 1124,
+                "contract": "StructStorage.sol:StructStorage",
+                "label": "c",
+                "offset": 0,
+                "slot": "1",
+                "type": "t_address"
+              },
+              {
+                "astId": 1127,
+                "contract": "StructStorage.sol:StructStorage",
+                "label": "d",
+                "offset": 0,
+                "slot": "2",
+                "type": "t_uint256"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(Outer)1140_storage": {
+            "encoding": "inplace",
+            "label": "struct StructStorage.Outer",
+            "members": [
+              {
+                "astId": 1132,
+                "contract": "StructStorage.sol:StructStorage",
+                "label": "id",
+                "offset": 0,
+                "slot": "0",
+                "type": "t_uint64"
+              },
+              {
+                "astId": 1136,
+                "contract": "StructStorage.sol:StructStorage",
+                "label": "inner",
+                "offset": 0,
+                "slot": "1",
+                "type": "t_struct(Inner)1128_storage"
+              },
+              {
+                "astId": 1139,
+                "contract": "StructStorage.sol:StructStorage",
+                "label": "tail",
+                "offset": 0,
+                "slot": "4",
+                "type": "t_uint256"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_uint128": {
+            "encoding": "inplace",
+            "label": "uint128",
+            "numberOfBytes": "16"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "encoding": "inplace",
+            "label": "uint64",
+            "numberOfBytes": "8"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "1147": "StructStorage.sol:StructStorage",
+        "1151": "StructStorage.sol:StructStorage",
+        "1157": "StructStorage.sol:StructStorage",
+        "1163": "StructStorage.sol:StructStorage"
+      }
+    },
+    "UserDefinedTypes.sol:UserDefinedTypes": {
+      "contractName": "UserDefinedTypes",
+      "sourceName": "UserDefinedTypes.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 1252,
+            "contract": "UserDefinedTypes.sol:UserDefinedTypes",
+            "label": "idVar",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_userDefinedValueType(Id)1243"
+          },
+          {
+            "astId": 1256,
+            "contract": "UserDefinedTypes.sol:UserDefinedTypes",
+            "label": "signedVar",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_userDefinedValueType(Signed)1245"
+          },
+          {
+            "astId": 1260,
+            "contract": "UserDefinedTypes.sol:UserDefinedTypes",
+            "label": "amountVar",
+            "offset": 16,
+            "slot": "1",
+            "type": "t_userDefinedValueType(Amount)1247"
+          },
+          {
+            "astId": 1266,
+            "contract": "UserDefinedTypes.sol:UserDefinedTypes",
+            "label": "byId",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_userDefinedValueType(Id)1243,t_uint256)"
+          },
+          {
+            "astId": 1272,
+            "contract": "UserDefinedTypes.sol:UserDefinedTypes",
+            "label": "bySigned",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_userDefinedValueType(Signed)1245,t_uint256)"
+          },
+          {
+            "astId": 1278,
+            "contract": "UserDefinedTypes.sol:UserDefinedTypes",
+            "label": "byAmount",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_userDefinedValueType(Amount)1247,t_uint256)"
+          }
+        ],
+        "types": {
+          "t_mapping(t_userDefinedValueType(Amount)1247,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_userDefinedValueType(Amount)1247",
+            "label": "mapping(Amount => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_mapping(t_userDefinedValueType(Id)1243,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_userDefinedValueType(Id)1243",
+            "label": "mapping(Id => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_mapping(t_userDefinedValueType(Signed)1245,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_userDefinedValueType(Signed)1245",
+            "label": "mapping(Signed => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_userDefinedValueType(Amount)1247": {
+            "encoding": "inplace",
+            "label": "Amount",
+            "numberOfBytes": "12"
+          },
+          "t_userDefinedValueType(Id)1243": {
+            "encoding": "inplace",
+            "label": "Id",
+            "numberOfBytes": "32"
+          },
+          "t_userDefinedValueType(Signed)1245": {
+            "encoding": "inplace",
+            "label": "Signed",
+            "numberOfBytes": "16"
+          }
+        }
+      },
+      "userDefinedValueTypes": {
+        "1243": "t_bytes32",
+        "1245": "t_int128",
+        "1247": "t_uint96",
+        "Id": "t_bytes32",
+        "Signed": "t_int128",
+        "Amount": "t_uint96"
+      },
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "1252": "UserDefinedTypes.sol:UserDefinedTypes",
+        "1256": "UserDefinedTypes.sol:UserDefinedTypes",
+        "1260": "UserDefinedTypes.sol:UserDefinedTypes",
+        "1266": "UserDefinedTypes.sol:UserDefinedTypes",
+        "1272": "UserDefinedTypes.sol:UserDefinedTypes",
+        "1278": "UserDefinedTypes.sol:UserDefinedTypes"
+      }
+    },
+    "ZRecursiveStorage.sol:ZRecursiveStorage": {
+      "contractName": "ZRecursiveStorage",
+      "sourceName": "ZRecursiveStorage.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 1388,
+            "contract": "ZRecursiveStorage.sol:ZRecursiveStorage",
+            "label": "root",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_struct(Node)1384_storage"
+          },
+          {
+            "astId": 1395,
+            "contract": "ZRecursiveStorage.sol:ZRecursiveStorage",
+            "label": "grid",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))"
+          },
+          {
+            "astId": 1399,
+            "contract": "ZRecursiveStorage.sol:ZRecursiveStorage",
+            "label": "tiny",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_array(t_uint8)dyn_storage"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "encoding": "inplace",
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_struct(Node)1384_storage)dyn_storage": {
+            "base": "t_struct(Node)1384_storage",
+            "encoding": "dynamic_array",
+            "label": "struct ZRecursiveStorage.Node[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint8)dyn_storage": {
+            "base": "t_uint8",
+            "encoding": "dynamic_array",
+            "label": "uint8[]",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "encoding": "mapping",
+            "key": "t_address",
+            "label": "mapping(address => mapping(uint256 => uint256))",
+            "numberOfBytes": "32",
+            "value": "t_mapping(t_uint256,t_uint256)"
+          },
+          "t_mapping(t_uint256,t_struct(Node)1384_storage)": {
+            "encoding": "mapping",
+            "key": "t_uint256",
+            "label": "mapping(uint256 => struct ZRecursiveStorage.Node)",
+            "numberOfBytes": "32",
+            "value": "t_struct(Node)1384_storage"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_uint256",
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_struct(Node)1384_storage": {
+            "encoding": "inplace",
+            "label": "struct ZRecursiveStorage.Node",
+            "members": [
+              {
+                "astId": 1372,
+                "contract": "ZRecursiveStorage.sol:ZRecursiveStorage",
+                "label": "id",
+                "offset": 0,
+                "slot": "0",
+                "type": "t_uint256"
+              },
+              {
+                "astId": 1377,
+                "contract": "ZRecursiveStorage.sol:ZRecursiveStorage",
+                "label": "children",
+                "offset": 0,
+                "slot": "1",
+                "type": "t_array(t_struct(Node)1384_storage)dyn_storage"
+              },
+              {
+                "astId": 1383,
+                "contract": "ZRecursiveStorage.sol:ZRecursiveStorage",
+                "label": "byId",
+                "offset": 0,
+                "slot": "2",
+                "type": "t_mapping(t_uint256,t_struct(Node)1384_storage)"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "encoding": "inplace",
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "1388": "ZRecursiveStorage.sol:ZRecursiveStorage",
+        "1395": "ZRecursiveStorage.sol:ZRecursiveStorage",
+        "1399": "ZRecursiveStorage.sol:ZRecursiveStorage"
+      }
+    },
+    "ZZFunctionStorage.sol:ZZFunctionStorage": {
+      "contractName": "ZZFunctionStorage",
+      "sourceName": "ZZFunctionStorage.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 1509,
+            "contract": "ZZFunctionStorage.sol:ZZFunctionStorage",
+            "label": "head",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1514,
+            "contract": "ZZFunctionStorage.sol:ZZFunctionStorage",
+            "label": "callback",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_function_external_nonpayable()returns()"
+          },
+          {
+            "astId": 1523,
+            "contract": "ZZFunctionStorage.sol:ZZFunctionStorage",
+            "label": "op",
+            "offset": 24,
+            "slot": "1",
+            "type": "t_function_internal_pure(t_uint256)returns(t_uint256)"
+          },
+          {
+            "astId": 1526,
+            "contract": "ZZFunctionStorage.sol:ZZFunctionStorage",
+            "label": "tail",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint8"
+          },
+          {
+            "astId": 1532,
+            "contract": "ZZFunctionStorage.sol:ZZFunctionStorage",
+            "label": "byTag",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_userDefinedValueType(Tag)1505,t_uint256)"
+          }
+        ],
+        "types": {
+          "t_function_external_nonpayable()returns()": {
+            "encoding": "inplace",
+            "label": "function () external",
+            "numberOfBytes": "24"
+          },
+          "t_function_internal_pure(t_uint256)returns(t_uint256)": {
+            "encoding": "inplace",
+            "label": "function (uint256) pure returns (uint256)",
+            "numberOfBytes": "8"
+          },
+          "t_mapping(t_userDefinedValueType(Tag)1505,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_userDefinedValueType(Tag)1505",
+            "label": "mapping(Tag => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "encoding": "inplace",
+            "label": "uint8",
+            "numberOfBytes": "1"
+          },
+          "t_userDefinedValueType(Tag)1505": {
+            "encoding": "inplace",
+            "label": "Tag",
+            "numberOfBytes": "4"
+          }
+        }
+      },
+      "userDefinedValueTypes": {
+        "1505": "t_bytes4",
+        "Tag": "t_bytes4"
+      },
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "1509": "ZZFunctionStorage.sol:ZZFunctionStorage",
+        "1514": "ZZFunctionStorage.sol:ZZFunctionStorage",
+        "1523": "ZZFunctionStorage.sol:ZZFunctionStorage",
+        "1526": "ZZFunctionStorage.sol:ZZFunctionStorage",
+        "1532": "ZZFunctionStorage.sol:ZZFunctionStorage"
+      }
+    },
+    "ZZShadowedNames.sol:ZZShadowedBase": {
+      "contractName": "ZZShadowedBase",
+      "sourceName": "ZZShadowedNames.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 1665,
+            "contract": "ZZShadowedNames.sol:ZZShadowedBase",
+            "label": "x",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1668,
+            "contract": "ZZShadowedNames.sol:ZZShadowedBase",
+            "label": "between",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1671,
+            "contract": "ZZShadowedNames.sol:ZZShadowedBase",
+            "label": "packed",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint64"
+          },
+          {
+            "astId": 1676,
+            "contract": "ZZShadowedNames.sol:ZZShadowedBase",
+            "label": "table",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_uint256,t_uint256)"
+          },
+          {
+            "astId": 1680,
+            "contract": "ZZShadowedNames.sol:ZZShadowedBase",
+            "label": "list",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_array(t_uint256)dyn_storage"
+          }
+        ],
+        "types": {
+          "t_array(t_uint256)dyn_storage": {
+            "base": "t_uint256",
+            "encoding": "dynamic_array",
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_uint256",
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "encoding": "inplace",
+            "label": "uint64",
+            "numberOfBytes": "8"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "1665": "ZZShadowedNames.sol:ZZShadowedBase",
+        "1668": "ZZShadowedNames.sol:ZZShadowedBase",
+        "1671": "ZZShadowedNames.sol:ZZShadowedBase",
+        "1676": "ZZShadowedNames.sol:ZZShadowedBase",
+        "1680": "ZZShadowedNames.sol:ZZShadowedBase"
+      }
+    },
+    "ZZShadowedNames.sol:ZZShadowedNames": {
+      "contractName": "ZZShadowedNames",
+      "sourceName": "ZZShadowedNames.sol",
+      "storageLayout": {
+        "storage": [
+          {
+            "astId": 1665,
+            "contract": "ZZShadowedNames.sol:ZZShadowedNames",
+            "label": "x",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1668,
+            "contract": "ZZShadowedNames.sol:ZZShadowedNames",
+            "label": "between",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1671,
+            "contract": "ZZShadowedNames.sol:ZZShadowedNames",
+            "label": "packed",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint64"
+          },
+          {
+            "astId": 1676,
+            "contract": "ZZShadowedNames.sol:ZZShadowedNames",
+            "label": "table",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_uint256,t_uint256)"
+          },
+          {
+            "astId": 1680,
+            "contract": "ZZShadowedNames.sol:ZZShadowedNames",
+            "label": "list",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_array(t_uint256)dyn_storage"
+          },
+          {
+            "astId": 1766,
+            "contract": "ZZShadowedNames.sol:ZZShadowedNames",
+            "label": "x",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 1769,
+            "contract": "ZZShadowedNames.sol:ZZShadowedNames",
+            "label": "packed",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_uint64"
+          },
+          {
+            "astId": 1774,
+            "contract": "ZZShadowedNames.sol:ZZShadowedNames",
+            "label": "table",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_uint256,t_uint256)"
+          },
+          {
+            "astId": 1778,
+            "contract": "ZZShadowedNames.sol:ZZShadowedNames",
+            "label": "list",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_array(t_uint256)dyn_storage"
+          }
+        ],
+        "types": {
+          "t_array(t_uint256)dyn_storage": {
+            "base": "t_uint256",
+            "encoding": "dynamic_array",
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "encoding": "mapping",
+            "key": "t_uint256",
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32",
+            "value": "t_uint256"
+          },
+          "t_uint256": {
+            "encoding": "inplace",
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "encoding": "inplace",
+            "label": "uint64",
+            "numberOfBytes": "8"
+          }
+        }
+      },
+      "userDefinedValueTypes": {},
+      "constantAndImmutableNames": [],
+      "declaringContracts": {
+        "1665": "ZZShadowedNames.sol:ZZShadowedBase",
+        "1668": "ZZShadowedNames.sol:ZZShadowedBase",
+        "1671": "ZZShadowedNames.sol:ZZShadowedBase",
+        "1676": "ZZShadowedNames.sol:ZZShadowedBase",
+        "1680": "ZZShadowedNames.sol:ZZShadowedBase",
+        "1766": "ZZShadowedNames.sol:ZZShadowedNames",
+        "1769": "ZZShadowedNames.sol:ZZShadowedNames",
+        "1774": "ZZShadowedNames.sol:ZZShadowedNames",
+        "1778": "ZZShadowedNames.sol:ZZShadowedNames"
+      }
+    }
+  }
+}

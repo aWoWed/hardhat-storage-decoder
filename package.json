@@ -1,0 +1,108 @@
+{
+  "name": "hardhat-storage-decoder",
+  "version": "0.2.0",
+  "description": "Read Solidity contract storage by variable name and a kind-checked path (mapping keys, array indices, struct fields) from Hardhat build-info. Supports Hardhat 2.x and 3.x.",
+  "license": "MIT",
+  "keywords": [
+    "hardhat",
+    "hardhat-plugin",
+    "solidity",
+    "storage",
+    "storage-layout",
+    "stdstore",
+    "ethereum"
+  ],
+  "type": "commonjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.cjs"
+      },
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
+    },
+    "./hardhat2": {
+      "require": {
+        "types": "./dist/hardhat2/index.d.ts",
+        "default": "./dist/hardhat2/index.cjs"
+      },
+      "import": {
+        "types": "./dist/hardhat2/index.d.mts",
+        "default": "./dist/hardhat2/index.mjs"
+      }
+    },
+    "./hardhat3": {
+      "require": {
+        "types": "./dist/hardhat3/index.d.ts",
+        "default": "./dist/hardhat3/index.cjs"
+      },
+      "import": {
+        "types": "./dist/hardhat3/index.d.mts",
+        "default": "./dist/hardhat3/index.mjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "hardhat2": [
+        "./dist/hardhat2/index.d.ts"
+      ],
+      "hardhat3": [
+        "./dist/hardhat3/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "USAGE.md",
+    "docs",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "prepack": "npm run build",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:e2e:hh2": "node scripts/run-e2e.mjs hh2",
+    "test:e2e:hh3": "node scripts/run-e2e.mjs hh3",
+    "typecheck:core": "tsc --noEmit -p tsconfig.json && node scripts/check-core-purity.mjs",
+    "typecheck:hh2": "tsc --noEmit -p tsconfig.hardhat2.json",
+    "typecheck:hh3": "tsc --noEmit -p tsconfig.hardhat3.json",
+    "verify:package": "npm run build && node scripts/check-dist-error-names.mjs && node scripts/check-dist-entrypoints.mjs && publint && attw --pack . && npm publish --dry-run",
+    "fixtures:generate": "node scripts/generate-fixtures.mjs",
+    "bench": "node scripts/bench.mjs"
+  },
+  "peerDependencies": {
+    "hardhat": "^2.0.0 || ^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "hardhat": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.8.0"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
+    "@types/node": "^22.10.0",
+    "hardhat-v2": "npm:hardhat@^2.29.0",
+    "hardhat-v3": "npm:hardhat@^3.13.0",
+    "publint": "^0.3.12",
+    "solc": "0.8.26",
+    "tsup": "^8.5.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

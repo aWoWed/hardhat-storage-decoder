@@ -1,0 +1,28 @@
+{
+  "name": "hardhat-storage-decoder-hh3-fixture",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Standalone Hardhat 3.x project that exercises hardhat-storage-decoder/hardhat3 on-chain.",
+  "type": "module",
+  "scripts": {
+    "copy-fixtures": "node ../copy-fixtures.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "pretest": "npm run copy-fixtures && npm run typecheck",
+    "test": "hardhat test mocha"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^4.0.15",
+    "@nomicfoundation/hardhat-mocha": "^3.1.0",
+    "@types/chai": "^4.3.20",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.10.0",
+    "chai": "^4.5.0",
+    "ethers": "^6.13.5",
+    "hardhat": "^3.13.0",
+    "mocha": "^11.1.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}
