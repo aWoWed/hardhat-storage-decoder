@@ -1,16 +1,89 @@
 # REMAINING
 
-What is not done, and what has and has not been verified, as of version 0.2.0 (2026-10-07).
-The checks in section 2 were last re-run on 2026-10-11, after the fixes that followed the
-independent review of that day (listed at the end of that section and in section 8).
+What is not done, and what has and has not been verified, on the way to 1.0.0. Written on
+2026-10-31, on `feat/contract-mocks`. This file names no current version, because the commit that
+bumps the version changes the two version files and nothing else.
+
+The table in section 2 records a run of 2026-10-11, from before the work in section 0. Only the
+results stated in section 0 are newer.
+
+## 0. Release status for 1.0.0
+
+Not released. `npm run release:gate` has not been run for real, so AC 28 is not met.
+
+Still outstanding, none of it done:
+
+- **Sepolia: not yet deployed.** The manifest has no Sepolia entry, so there are no addresses,
+  nothing is sealed, and no Sepolia read-back has run. The mocks have only been deployed to a
+  local node.
+- **A `readMany` of 300 through a public Sepolia RPC (AC 27) has not run**, because there is nothing
+  deployed to read. So the default concurrency of 16 is unproven against a public endpoint.
+- **Sourcify verification (AC 7) has not happened.** Nothing is deployed to verify. The tooling
+  exists: `node scripts/check-sourcify.mjs --chain 11155111`, which the gate runs.
+- **Geth and Reth have not run.** Neither is installed here, and `gh` is not on the `PATH`. Docker
+  would not help: `scripts/clients/run-client.mjs` takes `GETH_BIN` or a checksummed `.tools/geth.exe`,
+  and `RETH_BIN`, and has no Docker path. Reth publishes no Windows binary, so on this machine AC 19
+  rests on a successful `independent-checks.yml` run for the exact commit, or on `clients all`
+  elsewhere with both binaries.
+- **The mainnet check at gate G5 has not run.** The owner runs it with their own archive URL. No
+  report exists, and without one AC 22 stays unmet.
+- **Nothing has been pushed or merged**, so no workflow has run on GitHub (AC 11).
+- **The version bump (Step 13b) has not happened.** `package.json` reads 0.2.0 and
+  `package-lock.json` reads 0.1.0. AC 29 needs both at 1.0.0.
+- **`npm publish` has not happened** (section 1).
+- **The fixture baseline in `scripts/release-gate.mjs` must be retired right after 1.0.0 is tagged.**
+  It holds the fixtures unchanged through this release only.
+- **`npm run bench` was not run** after the concurrency change, because `BENCH_BASELINE` is unset
+  (section 3).
+
+The gate: `npm run release:gate` runs every check in order, stops at the first that does not pass and
+writes `.release-evidence/release-gate-<sha>.json`. Exit 1 is a real failure. Exit 3 is "could not
+check", which is never a pass: read-back exit 3, a mainnet check that could not check, or missing
+Geth or Reth evidence. Evidence from another commit is rejected. It requires the burst to have
+succeeded, not just read-back exit 0, because a rejected burst leaves the read-back's exit code at 0.
+It passes with the bump outstanding, since the bump follows it; `node
+scripts/check-release-consistency.mjs 1.0.0` then holds the bumped commit to both version files.
+`npm run release:gate -- --preflight` lists what is outstanding without running anything long. The
+gate's rules are tested with fakes in `test/unit/releaseGate.test.ts`; it has not run against the
+real commands, and it has not passed.
+
+Also judged by the gate: only the newest `independent-checks.yml` run for the commit counts; a mainnet
+report needs at least one non-zero value per contract; only `package.json` at 0.2.0, and
+`package-lock.json` at 0.1.0 or 0.2.0, count as a bump still to come, so any other version fails. A
+step past its timeout has its whole process tree killed and counts as "could not check".
+
+What changed for a caller on this branch, none of it released:
+
+- **Stricter address check.** The whole deployed bytecode is compared, ignoring only immutables,
+  library addresses and the metadata hash. It used to compare length and the first 32 bytes.
+  `ContractMismatchError` gains `reason`: `'no-code'` or `'code-differs'`.
+- **Default concurrency 16, was 256,** per decoder context rather than per call, covering `getCode`
+  and `getBlockNumber` too. Set it with `maxConcurrentReads`. A large `readMany` takes longer.
+- **Retries and a budget.** A failure a retry can help with is sent up to 3 times in all. One call
+  stops retrying after 32 such failures. A deterministic error is never re-sent.
+- **A stopped batch.** Once a call has reached a failure it will reject with, or spent its budget,
+  its queued reads are rejected instead of sent. They used to keep running. Because of this,
+  `readMany` can reject with whichever failure stopped it first: a wrong address beside a pruned
+  entry may surface as either, by timing. Read one entry at a time when the verdict on each matters.
+- **`PrunedStateError`**, new and exported, names the block and says an archive node is needed.
+- **`classifyReadFailure(error)`**, new and exported, sorts a failure into `'pruned'`, `'wrong-data'`
+  or `'rpc'`, and works across the CommonJS and ES-module builds.
+- **Lower-level exports removed.** `attachStorageDecoder`, `createGetCode`, `createGetStorageAt`,
+  `Hardhat3LayoutReader`, `withStorageLayoutOutputSelection`, `STORAGE_LAYOUT_SELECTOR` and
+  `MANUAL_OUTPUT_SELECTION_SNIPPET` from `/hardhat3`, and `ensureStorageLayoutOutput` and the
+  `BuildInfoReader` type from `/hardhat2`. Also gone: the exported `HardhatStorageDecoderEntrypointError`
+  class of the root entrypoint, which still throws an error of that name.
+
+The mocks use `isSealed`, where the plan said `sealed`: that is a reserved word in Solidity.
 
 ## 1. `npm publish`
 
-Not done. It needs registry credentials and 2FA.
+Not done. It needs registry credentials and 2FA. Only the owner runs it, at gate G6.
 
-- `npm run verify:package` passes end to end: the dist error-name check, `publint`,
-  `@arethetypeswrong/cli` ("No problems found") and `npm publish --dry-run` (23 files, about 459 kB
-  packed; `USAGE.md` and `docs/` now ship).
+- As of 2026-10-11, before this branch: `npm run verify:package` passed end to end: the dist
+  error-name check, `publint`, `@arethetypeswrong/cli` ("No problems found") and
+  `npm publish --dry-run` (23 files, about 459 kB packed; `USAGE.md` and `docs/` now ship). The gate
+  re-runs it.
 - `attw` used to fail, on 0.1.0 as well: the `./hardhat2` and `./hardhat3` subpaths did not
   resolve under `node10` module resolution, which is what a TypeScript project gets from
   Hardhat 2's default `"module": "commonjs"` tsconfig. `package.json` now carries a
@@ -22,9 +95,11 @@ Not done. It needs registry credentials and 2FA.
 
 ## 2. Verification status
 
+Run of 2026-10-11, except for the first row's second figure. The gate re-runs all of these.
+
 | Check | Status |
 |---|---|
-| `npx vitest run` (unit + adapter tests) | 528 passing (20 files) |
+| `npx vitest run` (unit + adapter tests) | 528 passing (20 files); more on this branch, which the gate reports when it runs |
 | `npm run typecheck:core` | clean; core purity check passes (10 files, zero hardhat imports) |
 | `npm run typecheck:hh2`, `typecheck:hh3` | clean |
 | `npm run build` | clean, all three entrypoints |
@@ -51,6 +126,46 @@ out-of-bounds; the speculative value read is discarded".
 A second unit test assertion changed on 2026-10-10: `test/unit/parseStorageLayout.test.ts` now
 finds `Pair`'s type id by label instead of hard-coding it, because adding NatSpec to the
 fixture contracts shifts solc AST ids.
+
+Two more changed on purpose with the strict address check, in the contract/address block of
+`test/unit/storageQueryBuilder.test.ts`, because they asserted the old length and first-32-bytes
+comparison. "accepts code that matches in length and first 32 bytes" accepted a differing tail
+with no references; it is now "accepts code that differs only where the artifact declares an
+immutable", and the same tail without references is a new rejection test. "rejects a
+first-32-bytes mismatch" matched the old message; it is now "rejects a difference inside the
+first 32 bytes, naming the byte". "rejects an address with no code" also asserts `reason` now.
+
+Tests changed on purpose by the limiter and retry layer (default concurrency 256 -> 16, per
+context, covering `getCode` and `getBlockNumber` too):
+
+- `test/unit/readAll.test.ts`: "never has more than 256 storage reads in flight" is now "never
+  has more than the default 16..." and expects a peak of 16. "stops sending queued reads once the
+  dump has failed" now allows for a first window of 16 rather than 256.
+- `test/unit/readMany.test.ts`: "reads 100 keys with 100 slot reads..." and "reads the array length
+  once for 100 indices..." assert that 100 calls go out in one round, which the new default does
+  not allow. They now ask for a limit of 256. Their assertions are unchanged.
+- `test/unit/errors.test.ts`: `PrunedStateError` added to the table of error classes.
+
+Changed after the review of the retry layer, in tests new on this branch, because they pinned what
+the review overturned:
+
+- `test/unit/retry.test.ts`: "consumes no budget" (pruned) and "lets a fatal failure run through
+  every query" and "readMany does not stop at its first failure" pinned that `pruned` and `fatal`
+  leave queued calls running; they now assert that the queue stops and the rejection is the same
+  error. HTTP 400 and 401 moved from `fatal` to `exhausted`. A bare "pruned" is no longer pruned
+  wording. "names block %s" no longer covers `latest`, whose message is different.
+- `test/unit/retry.test.ts`: the pruned queue test now bounds calls by limit + 1, not budget + 1 +
+  limit, since a pruned failure stops the queue at once.
+- `test/adapters/hh3/limitAndRetry.test.ts`: HTTP 401 and the bare HTTP 400 are `exhausted`, not
+  `fatal`.
+- `test/adapters/hh2/limitAndRetry.test.ts`: a usage-limit body arriving as error 110 is `retryable`,
+  not `exhausted`, because transport numbers now decide before any wording.
+
+Added on this branch without changing an existing assertion: the new cases in
+`test/unit/storageQueryBuilder.test.ts` ("takes the bytecode from an ExpectedBytecode...", "is
+skipped when an ExpectedBytecode has empty bytecode") and one case each in
+`test/adapters/hh2/readBuildInfo.test.ts` and `test/adapters/hh3/readBuildInfo.test.ts` that the
+references are passed along.
 
 Seven input-validation fixes followed on 2026-10-10 and 2026-10-11, with 33 new unit tests
 (255 → 288). They are not yet released and change what a caller sees for malformed input:
@@ -135,6 +250,9 @@ test changed.
 | one `readMany` of 1,000 | not available | 66 ms |
 | RPC calls for that | — | 1 `getCode` + 1,000 `getStorageAt` |
 
+These figures are from before the default concurrency went from 256 to 16, which lengthens a large
+`readMany`. `npm run bench` was not re-run after that change, because `BENCH_BASELINE` was not set.
+
 Not measured: a real remote or forked network. Fork mode exists in the script but needs
 `FORK_URL`, `FORK_ADDRESS`, `FORK_FQN` and `FORK_VARIABLE` naming a contract that already
 exists on the forked chain.
@@ -168,6 +286,10 @@ exists on the forked chain.
   `formArtifactPathFromFullyQualifiedName` (Hardhat 2) and `getArtifactPath`/`clearCache`
   (Hardhat 3). Each is feature-detected; where one is missing the adapter caches for the life
   of the process, as 0.1.0 did. Only Hardhat 2.29.0 and 3.13.0 have been run.
+
+- **Accepted: a manifest reset to `chains: {}` after deployment only shows a `SKIPPED` notice in the weekly
+  read-back,** and the run stays green. The release gate still catches it, and the owner runbook counts
+  `SKIPPED` after G3 as a failure.
 
 ## 5. Planned for v2
 
@@ -230,7 +352,7 @@ Low, core:
 - `PathSegmentCountMismatchError.expected` can be `Infinity` for a struct with no finite leaf.
 - A segment of an unknown kind from plain JavaScript is reported as "but undefined was given".
 - `extractPackedBytes` does not reject a negative offset or a fractional size.
-- `toStorageWord` rejects some compact quantities and accepts `"0x"` as zero.
+- `toStorageWord` accepts `"0x"` as zero.
 - Lenient key coercions: lone surrogates in a string key, an address with a wrong EIP-55
   checksum, and a `bytesN` key shorter than N (padded) are all accepted.
 - A `transient` state variable gets the constant-or-immutable hint in its not-found message.

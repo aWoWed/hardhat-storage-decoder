@@ -53,7 +53,8 @@ export interface StorageReadRequest {
  *
  * The core normalises what it is handed: a shorter array is left-padded with zeros to 32
  * bytes, and a longer one is rejected with a `RangeError`. A rejection from the
- * implementation propagates to the caller of the query unchanged.
+ * implementation reaches the caller of the query as the retry layer leaves it; see
+ * `classifyRpcError`.
  */
 export type GetStorageAt = (request: StorageReadRequest) => Promise<Uint8Array>;
 

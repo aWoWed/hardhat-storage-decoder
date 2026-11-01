@@ -15,6 +15,11 @@ interface PendingCall {
   readonly settle: () => void;
 }
 
+/** Resolves once everything that can happen without a timer or a release has happened. */
+export function quiescent(): Promise<void> {
+  return new Promise((resolve) => setImmediate(resolve));
+}
+
 export class DeferredChain {
   readonly storage = new MockStorage();
   /** Artifact bytecode; `undefined` disables the contract/address check. */
@@ -74,7 +79,7 @@ export class DeferredChain {
 
   /** Wait until nothing more can happen without a release, then release what is pending. */
   async round(): Promise<string[]> {
-    await new Promise<void>((resolve) => setImmediate(resolve));
+    await quiescent();
     const batch = this.#pending;
     this.#pending = [];
     for (const call of batch) call.settle();

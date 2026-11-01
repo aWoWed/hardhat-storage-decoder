@@ -99,13 +99,25 @@ describe('toChecksumAddress', () => {
 });
 
 describe('toStorageWord', () => {
+  it('leaves hexToBytes strict', () => {
+    expect(() => hexToBytes('0x1')).toThrow(TypeError);
+  });
+
   it('left-pads short RPC results to 32 bytes', () => {
     expect(toStorageWord('0x01')).toHaveLength(32);
     expect(bytesToBigInt(toStorageWord('0x01'))).toBe(1n);
     expect(bytesToBigInt(toStorageWord('0x'))).toBe(0n);
+    expect(bytesToBigInt(toStorageWord('0x0'))).toBe(0n);
+    expect(bytesToBigInt(toStorageWord('0x1'))).toBe(1n);
+    expect(bytesToBigInt(toStorageWord('0xabc'))).toBe(0xabcn);
+    expect(toStorageWord('0x1')).toHaveLength(32);
   });
 
   it('rejects oversized words', () => {
     expect(() => toStorageWord(new Uint8Array(33))).toThrow(RangeError);
+    expect(() => toStorageWord(`0x${'1'.repeat(66)}`)).toThrow(RangeError);
+    expect(() => toStorageWord(`0x${'1'.repeat(65)}`)).toThrow(RangeError);
+    expect(() => toStorageWord('0xg')).toThrow(TypeError);
+    expect(() => toStorageWord('0xabg')).toThrow(TypeError);
   });
 });

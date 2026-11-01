@@ -1,0 +1,105 @@
+{
+  "chainId": 1,
+  "pinnedBlock": 26313450,
+  "candidates": [
+    {
+      "id": "uni",
+      "address": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+      "file": "Uni.sol",
+      "contract": "Uni",
+      "solc": "0.5.16",
+      "solcLong": "0.5.16+commit.9c3226ce",
+      "settings": { "optimizer": { "enabled": true, "runs": 999999 }, "evmVersion": "istanbul" },
+      "values": [
+        { "id": "totalSupply", "name": "totalSupply", "oracle": { "signature": "totalSupply()", "type": "uint" } },
+        { "id": "minter", "name": "minter", "oracle": { "signature": "minter()", "type": "address" } },
+        { "id": "mintingAllowedAfter", "name": "mintingAllowedAfter", "oracle": { "signature": "mintingAllowedAfter()", "type": "uint" } },
+        {
+          "id": "balances[UNI-ETH pair]",
+          "name": "balances",
+          "path": [["key", "0xd3d2E2692501A5c9Ca623199D38826e513033a17"]],
+          "oracle": { "signature": "balanceOf(address)", "args": ["0xd3d2E2692501A5c9Ca623199D38826e513033a17"], "type": "uint" }
+        },
+        {
+          "id": "numCheckpoints[delegatee]",
+          "name": "numCheckpoints",
+          "path": [["key", "0x26607ac599266b21d13c7acf7942c7701a8b699c"]],
+          "oracle": { "signature": "numCheckpoints(address)", "args": ["0x26607ac599266b21d13c7acf7942c7701a8b699c"], "type": "uint" }
+        },
+        {
+          "id": "checkpoints[delegatee][0].fromBlock",
+          "name": "checkpoints",
+          "path": [["key", "0x26607ac599266b21d13c7acf7942c7701a8b699c"], ["key", 0], ["field", "fromBlock"]],
+          "oracle": { "signature": "checkpoints(address,uint32)", "args": ["0x26607ac599266b21d13c7acf7942c7701a8b699c", 0], "output": 0, "type": "uint" }
+        },
+        {
+          "id": "checkpoints[delegatee][0].votes",
+          "name": "checkpoints",
+          "path": [["key", "0x26607ac599266b21d13c7acf7942c7701a8b699c"], ["key", 0], ["field", "votes"]],
+          "oracle": { "signature": "checkpoints(address,uint32)", "args": ["0x26607ac599266b21d13c7acf7942c7701a8b699c", 0], "output": 1, "type": "uint" }
+        }
+      ]
+    },
+    {
+      "id": "v2pair",
+      "address": "0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc",
+      "file": "UniswapV2Pair.sol",
+      "contract": "UniswapV2Pair",
+      "solc": "0.5.16",
+      "solcLong": "0.5.16+commit.9c3226ce",
+      "settings": { "optimizer": { "enabled": true, "runs": 999999 }, "evmVersion": "istanbul" },
+      "values": [
+        { "id": "totalSupply", "name": "totalSupply", "oracle": { "signature": "totalSupply()", "type": "uint" } },
+        { "id": "factory", "name": "factory", "oracle": { "signature": "factory()", "type": "address" } },
+        { "id": "token0", "name": "token0", "oracle": { "signature": "token0()", "type": "address" } },
+        { "id": "token1", "name": "token1", "oracle": { "signature": "token1()", "type": "address" } },
+        { "id": "reserve0 (packed)", "name": "reserve0", "oracle": { "signature": "getReserves()", "output": 0, "type": "uint" } },
+        { "id": "reserve1 (packed)", "name": "reserve1", "oracle": { "signature": "getReserves()", "output": 1, "type": "uint" } },
+        { "id": "blockTimestampLast (packed)", "name": "blockTimestampLast", "oracle": { "signature": "getReserves()", "output": 2, "type": "uint" } },
+        { "id": "price0CumulativeLast", "name": "price0CumulativeLast", "oracle": { "signature": "price0CumulativeLast()", "type": "uint" } },
+        {
+          "id": "balanceOf[address(0)]",
+          "name": "balanceOf",
+          "path": [["key", "0x0000000000000000000000000000000000000000"]],
+          "oracle": { "signature": "balanceOf(address)", "args": ["0x0000000000000000000000000000000000000000"], "type": "uint" }
+        }
+      ]
+    },
+    {
+      "id": "bayc",
+      "address": "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+      "file": "BoredApeYachtClub.sol",
+      "contract": "BoredApeYachtClub",
+      "solc": "0.7.0",
+      "solcLong": "0.7.0+commit.9e61f92b",
+      "settings": { "optimizer": { "enabled": false, "runs": 200 }, "evmVersion": "istanbul" },
+      "values": [
+        { "id": "_name (short string)", "name": "_name", "oracle": { "signature": "name()", "type": "string" } },
+        { "id": "_symbol (short string)", "name": "_symbol", "oracle": { "signature": "symbol()", "type": "string" } },
+        { "id": "_baseURI (long string)", "name": "_baseURI", "oracle": { "signature": "baseURI()", "type": "string" } },
+        { "id": "BAYC_PROVENANCE (long string)", "name": "BAYC_PROVENANCE", "oracle": { "signature": "BAYC_PROVENANCE()", "type": "string" } },
+        { "id": "MAX_APES", "name": "MAX_APES", "oracle": { "signature": "MAX_APES()", "type": "uint" } },
+        { "id": "startingIndex", "name": "startingIndex", "oracle": { "signature": "startingIndex()", "type": "uint" } },
+        { "id": "saleIsActive (packed bool)", "name": "saleIsActive", "oracle": { "signature": "saleIsActive()", "type": "bool" } },
+        {
+          "id": "_holderTokens[holder]._inner._values[0] (array in struct in mapping)",
+          "name": "_holderTokens",
+          "path": [["key", "0xf7801b8115f3fe46ac55f8c0fdb5243726bdb66a"], ["field", "_inner"], ["field", "_values"], ["index", 0]],
+          "oracle": { "signature": "tokenOfOwnerByIndex(address,uint256)", "args": ["0xf7801b8115f3fe46ac55f8c0fdb5243726bdb66a", 0], "type": "uint" }
+        },
+        {
+          "id": "_tokenOwners._inner._entries[1]._key (struct array)",
+          "name": "_tokenOwners",
+          "path": [["field", "_inner"], ["field", "_entries"], ["index", 1], ["field", "_key"]],
+          "oracle": { "signature": "tokenByIndex(uint256)", "args": [1], "type": "uint" }
+        },
+        {
+          "id": "_tokenOwners._inner._entries[1]._value (struct array)",
+          "name": "_tokenOwners",
+          "path": [["field", "_inner"], ["field", "_entries"], ["index", 1], ["field", "_value"]],
+          "oracle": { "signature": "ownerOf(uint256)", "args": [1], "type": "uint" }
+        }
+      ]
+    }
+  ]
+}

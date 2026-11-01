@@ -28,6 +28,7 @@
 
 import { extendEnvironment } from 'hardhat/config';
 import type { HardhatRuntimeEnvironment } from 'hardhat/types/runtime';
+import type { StorageDecoderOptions } from '../core/query/limiter.js';
 import {
   type StorageDecoderContext,
   type StorageQueryBuilder,
@@ -35,7 +36,7 @@ import {
 } from '../core/query/StorageQueryBuilder.js';
 import { ensureStorageLayoutOutput } from './ensureStorageLayoutOutput.js';
 import { createBuildInfoReader } from './readBuildInfo.js';
-import { createGetBlockNumber, createGetCode, createGetStorageAt } from './provider.js';
+import { classifyProviderError, createProviderReaders } from './provider.js';
 
 // Registered at import time: `extendConfig` and `subtask` must both run before Hardhat resolves
 // the config and builds its task graph.
@@ -55,27 +56,35 @@ ensureStorageLayoutOutput();
  *
  * @param hre - The Hardhat 2 runtime environment to read artifacts and the network provider from.
  * The provider is only touched when a query runs, not when this is called.
+ * @param options - The concurrency limit and retry settings of this decoder; omit for the
+ * defaults. `hre.storageDecoder` always uses the defaults.
  * @returns A new query builder bound to `hre`. Its chain methods never throw; the terminal
  * methods (`.read()` and the others) reject with the core query errors, which are re-exported
  * from this module.
  */
-export function createHardhatStorageDecoder(hre: HardhatRuntimeEnvironment): StorageQueryBuilder {
+export function createHardhatStorageDecoder(
+  hre: HardhatRuntimeEnvironment,
+  options?: StorageDecoderOptions
+): StorageQueryBuilder {
   const buildInfo = createBuildInfoReader(hre);
   /** Reads `hre.network.provider` only when called, so no network starts at construction. */
   const getProvider = () => hre.network.provider;
 
+  const { getStorageAt, getCode, getBlockNumber } = createProviderReaders(getProvider);
+
   const context: StorageDecoderContext = {
     getLayout: buildInfo.getLayout,
-    getStorageAt: createGetStorageAt(getProvider),
+    getStorageAt,
     // Supplying both of these is what enables the contract/address sanity check in the query
     // builder; the check is skipped entirely when either is absent.
     getDeployedBytecode: buildInfo.getDeployedBytecode,
-    getCode: createGetCode(getProvider),
+    getCode,
     // Lets a dump of `latest` resolve the block once and read everything at that number.
-    getBlockNumber: createGetBlockNumber(getProvider),
+    getBlockNumber,
+    classifyRpcError: classifyProviderError,
   };
 
-  return createStorageDecoder(context);
+  return createStorageDecoder(context, options);
 }
 
 extendEnvironment((hre) => {
@@ -116,8 +125,6 @@ declare module 'hardhat/types/runtime' {
 }
 
 export { StorageLayoutNotAvailableError } from './readBuildInfo.js';
-export type { BuildInfoReader } from './readBuildInfo.js';
-export { ensureStorageLayoutOutput } from './ensureStorageLayoutOutput.js';
 
 // Re-exported so a consumer can `instanceof`-check failures and annotate results without
 // reaching past the subpath they installed.
@@ -130,14 +137,23 @@ export {
   IndexOutOfBoundsError,
   PathSegmentCountMismatchError,
   PathSegmentKindMismatchError,
+  PrunedStateError,
   StorageDecoderError,
   UnsupportedTypeError,
   VariableNotFoundError,
+  classifyReadFailure,
 } from '../core/query/errors.js';
+export type { RetryOptions, StorageDecoderOptions } from '../core/query/limiter.js';
 export { StorageQueryBuilder } from '../core/query/StorageQueryBuilder.js';
-export type { StorageDecoderContext, StorageReadResult } from '../core/query/StorageQueryBuilder.js';
+export type {
+  ByteRange,
+  ExpectedBytecode,
+  StorageDecoderContext,
+  StorageReadResult,
+} from '../core/query/StorageQueryBuilder.js';
 export type { DumpValue, ReadAllOptions, StorageDumpResult } from '../core/query/dump.js';
-export type { BlockTag } from '../core/rpc/getStorageAt.js';
+export type { RpcErrorClass } from '../core/rpc/classifyRpcError.js';
+export type { BlockTag, GetStorageAt, StorageReadRequest } from '../core/rpc/getStorageAt.js';
 export type { DecodedValue } from '../core/slots/decode.js';
 export type { MappingKeyValue, PathSegment } from '../core/slots/deriveSlot.js';
 // The layout helpers the error messages and `USAGE.md` refer to, for code that parses a

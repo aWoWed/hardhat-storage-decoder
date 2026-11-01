@@ -37,10 +37,10 @@
  */
 
 import type { HardhatConfig } from 'hardhat/types/config';
-import { StorageDecoderError } from '../core/index.js';
+import { StorageDecoderError } from '../core/query/errors.js';
 
 /** The solc output selector that carries the storage layout. */
-export const STORAGE_LAYOUT_SELECTOR = 'storageLayout';
+const STORAGE_LAYOUT_SELECTOR = 'storageLayout';
 
 /**
  * Per-contract outputs this package cannot work without, beyond `storageLayout` itself.

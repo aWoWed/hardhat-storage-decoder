@@ -1,0 +1,19 @@
+{
+  "name": "hardhat-storage-decoder-example",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Reads the sealed public mocks by variable name, with every read taken from docs/public-testnet.md.",
+  "type": "module",
+  "scripts": {
+    "read": "node run.mjs",
+    "read:local": "node run.mjs --local",
+    "read:published": "node run.mjs --published"
+  },
+  "devDependencies": {
+    "ethers": "6.17.0",
+    "hardhat": "3.21.2"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

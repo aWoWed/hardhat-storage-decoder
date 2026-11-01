@@ -270,15 +270,23 @@ export function extractPackedBytes(word: Uint8Array, offset: number, size: numbe
 /**
  * Normalize any `eth_getStorageAt`-shaped result into exactly 32 bytes.
  *
- * A result shorter than a word is treated as having lost its leading zeros and is left-padded.
+ * A result shorter than a word is treated as having lost its leading zeros and is left-padded, down
+ * to a single digit: nodes answer with quantities such as `0x0` as well as whole bytes. {@link hexToBytes}
+ * stays strict, because a mapping key that lost a digit is a different key.
  *
  * @param value - A hex string (with or without `0x`) or raw bytes, at most 32 bytes long.
  * @returns A 32-byte word. A 32-byte `Uint8Array` input is returned as the same instance.
- * @throws {TypeError} when `value` is a string that is not valid even-length hex.
+ * @throws {TypeError} when `value` is a string that is not valid hex.
  * @throws {RangeError} when `value` is longer than 32 bytes.
  */
 export function toStorageWord(value: string | Uint8Array): Uint8Array {
-  const bytes = typeof value === 'string' ? hexToBytes(value) : value;
+  let bytes: Uint8Array;
+  if (typeof value === 'string') {
+    const body = value.replace(/^0[xX]/, '');
+    bytes = hexToBytes(body.length % 2 === 0 ? body : `0${body}`);
+  } else {
+    bytes = value;
+  }
   if (bytes.length === WORD_SIZE) return bytes;
   if (bytes.length > WORD_SIZE) {
     throw new RangeError(`storage word must be at most 32 bytes, got ${bytes.length}`);

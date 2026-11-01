@@ -1,0 +1,2 @@
+# The source hash binds a deployment to these exact bytes, whatever core.autocrlf says.
+deployments/contracts/*.sol text eol=lf

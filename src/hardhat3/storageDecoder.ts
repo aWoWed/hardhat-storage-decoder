@@ -11,8 +11,8 @@ import {
   type StorageDecoderContext,
   type StorageQueryBuilder,
   createStorageDecoder,
-} from '../core/index.js';
-import { createGetBlockNumber, createGetCode, createGetStorageAt } from './provider.js';
+} from '../core/query/StorageQueryBuilder.js';
+import { classifyProviderError, createProviderReaders } from './provider.js';
 import { Hardhat3LayoutReader } from './readBuildInfo.js';
 
 /**
@@ -39,18 +39,20 @@ function readerFor(artifacts: ArtifactManager): Hardhat3LayoutReader {
  */
 export function createStorageDecoderContext(
   artifacts: ArtifactManager,
-  provider: EthereumProvider
+  provider: Pick<EthereumProvider, 'request'>
 ): StorageDecoderContext {
   const reader = readerFor(artifacts);
+  const { getStorageAt, getCode, getBlockNumber } = createProviderReaders(provider);
   return {
     getLayout: (fullyQualifiedName) => reader.getLayout(fullyQualifiedName),
-    getStorageAt: createGetStorageAt(provider),
+    getStorageAt,
     // Supplying BOTH of these is what enables the query builder's ContractMismatchError
-    // heuristic; supplying only one silently disables the check.
+    // check; supplying only one silently disables it.
     getDeployedBytecode: (fullyQualifiedName) => reader.getDeployedBytecode(fullyQualifiedName),
-    getCode: createGetCode(provider),
+    getCode,
     // Lets a dump of `latest` resolve the tag once and read every slot at that block.
-    getBlockNumber: createGetBlockNumber(provider),
+    getBlockNumber,
+    classifyRpcError: classifyProviderError,
   };
 }
 

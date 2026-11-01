@@ -1,0 +1,17 @@
+{
+  // ESM, as in `test/fixtures/hh3-project`: relative imports carry `.js` extensions.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "types": ["node", "mocha", "chai"]
+  },
+  "include": ["hardhat.config.ts", "test/**/*.ts", "scripts/**/*.ts", "../shared/**/*.ts"]
+}

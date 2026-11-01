@@ -1,0 +1,10 @@
+{
+  "name": "hardhat-storage-decoder-deployments-mainnet",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Hardhat 2.x project that compiles verified mainnet sources and reads them at a pinned block.",
+  "type": "commonjs",
+  "devDependencies": {
+    "hardhat": "2.29.1"
+  }
+}

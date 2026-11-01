@@ -1,0 +1,17 @@
+{
+  // `node16`, as in `test/fixtures/hh2-project`: the package is exports-map-only.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "node16",
+    "moduleResolution": "node16",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "types": ["node", "mocha", "chai"]
+  },
+  "include": ["hardhat.config.ts", "test/**/*.ts", "scripts/**/*.ts", "../shared/**/*.ts"]
+}

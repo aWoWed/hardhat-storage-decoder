@@ -7,15 +7,19 @@
  * fixes the order in which failures are reported, whatever order the calls settle in.
  *
  * {@link CallScope} holds what the queries of one `read()`, `readMany()` or `readAll()` call
- * share: memoised layouts, contract checks and array-length reads, and one concurrency limit.
+ * share: memoised layouts, contract checks and array-length reads, and one retry budget. The
+ * concurrency limit is per decoder context, shared across calls; see `limiter.ts`.
  * `readAll()` (see `dump.ts`) builds on the same scope and on {@link readLeaf}.
  */
 
 import type { ParsedStorageLayout } from '../layout/parseStorageLayout.js';
+import { type RpcErrorClass, classifyRpcError } from '../rpc/classifyRpcError.js';
 import type { BlockTag, SingleSlotReader } from '../rpc/getStorageAt.js';
 import { awaitObligationsInOrder, decode, resolveReadPlan } from '../slots/decode.js';
 import { type PathSegment, type TerminalDescriptor, deriveSlot } from '../slots/deriveSlot.js';
-import { ContractMismatchError } from './errors.js';
+import { compareBytecode } from './compareBytecode.js';
+import { ContractMismatchError, PrunedStateError, isLocalFailure } from './errors.js';
+import { limiterFor } from './limiter.js';
 import type { StorageDecoderContext, StorageReadResult } from './StorageQueryBuilder.js';
 
 /** What a builder has accumulated. Everything but the path and block is optional until read. */
@@ -37,9 +41,6 @@ export interface QueryState {
   readonly blockTag: BlockTag;
 }
 
-/** Most storage reads one call keeps in flight at a time, across every query in it. */
-const MAX_CONCURRENT_READS = 256;
-
 /** A rejection handler that does nothing; what {@link handled} attaches. */
 const ignoreRejection = (): void => {};
 
@@ -53,7 +54,7 @@ const ignoreRejection = (): void => {};
  * @param promise - The promise to mark.
  * @returns The same promise, not a copy: awaiting it still rejects with the original error.
  */
-function handled<T>(promise: Promise<T>): Promise<T> {
+export function handled<T>(promise: Promise<T>): Promise<T> {
   promise.catch(ignoreRejection);
   return promise;
 }
@@ -69,42 +70,20 @@ async function invoke<T>(fn: () => T | Promise<T>): Promise<T> {
 }
 
 /**
- * A counting semaphore: at most `permits` functions passed to {@link Semaphore.run} are
- * running at any moment. Callers beyond that wait in arrival order.
+ * What the retry layer does about a failed RPC call.
+ *
+ * @param context - The decoder context the call belongs to; its classifier goes first.
+ * @param error - The failure.
+ * @returns Its class. A classifier that throws, or answers with something that is not a class,
+ *   gives `fatal`, so that the original failure is what gets reported, and is not re-sent.
  */
-class Semaphore {
-  /** Permits not currently held. Never negative; stays 0 while anyone is waiting. */
-  #available: number;
-  /** Wake-up callbacks of the callers waiting for a permit, oldest first. */
-  readonly #waiting: (() => void)[] = [];
-
-  /**
-   * @param permits - How many functions may run at once.
-   */
-  constructor(permits: number) {
-    this.#available = permits;
-  }
-
-  /**
-   * Run `fn` once a permit is free, and release the permit when it settles either way.
-   *
-   * @param fn - The work to run under a permit. It is not called until a permit is held.
-   * @returns `fn`'s result; rejects with whatever `fn` rejects with.
-   */
-  async run<T>(fn: () => Promise<T>): Promise<T> {
-    if (this.#available > 0) {
-      this.#available -= 1;
-    } else {
-      await new Promise<void>((resolve) => this.#waiting.push(resolve));
-    }
-    try {
-      return await fn();
-    } finally {
-      const next = this.#waiting.shift();
-      // Hand the permit straight to the next waiter rather than returning it to the pool.
-      if (next === undefined) this.#available += 1;
-      else next();
-    }
+function classifyFailure(context: StorageDecoderContext, error: unknown): RpcErrorClass {
+  if (isLocalFailure(error)) return 'fatal';
+  try {
+    const kind = context.classifyRpcError?.(error) ?? classifyRpcError(error);
+    return kind === 'retryable' || kind === 'exhausted' || kind === 'pruned' ? kind : 'fatal';
+  } catch {
+    return 'fatal';
   }
 }
 
@@ -144,18 +123,120 @@ function memoKey(...parts: readonly unknown[]): string {
 export class CallScope {
   /** Memoised work, per decoder context, so queries from different decoders never share. */
   readonly #memos = new Map<StorageDecoderContext, ContextMemo>();
-  /** Limits the storage reads in flight across every reader this scope hands out. */
-  readonly #semaphore = new Semaphore(MAX_CONCURRENT_READS);
-  /** Set by {@link CallScope.abort}; checked each time a read is about to be sent. */
+  /** Set by {@link CallScope.abort}; checked each time an RPC call is about to be sent. */
   #aborted = false;
+  /**
+   * How many `retryable` or `exhausted` failures this scope has seen. One count, even when a
+   * `readMany` mixes contexts: each failure is compared with its own context's budget.
+   */
+  #failures = 0;
+  /**
+   * The failure that stopped the scope, which queued calls reject with: a `pruned` or `fatal`
+   * one, or the one that passed the budget. The terminal method is going to reject by then.
+   */
+  #stopped: { readonly failure: unknown } | undefined;
+  /** Ends each backoff in progress; run when no retry may follow any more. */
+  readonly #backoffs = new Set<() => void>();
 
   /**
-   * Stop issuing storage reads. Reads already sent are unaffected; reads still queued behind
-   * the semaphore are rejected instead of being sent once the call has already failed.
-   * Layout lookups and contract checks are not affected.
+   * Stop issuing RPC calls: a terminal method calls this as it settles. Calls already sent are
+   * unaffected; calls queued behind the limit or waiting to be retried are rejected instead of
+   * being sent. Layout lookups are not affected.
    */
   abort(): void {
     this.#aborted = true;
+    this.#endBackoffs();
+  }
+
+  /** End every backoff in progress, for each retry to see why it should not go ahead. */
+  #endBackoffs(): void {
+    for (const end of this.#backoffs) end();
+  }
+
+  /**
+   * Send nothing more in this call, beyond what is already in flight. The first failure to get
+   * here is the one kept.
+   *
+   * @param failure - What the calls not yet sent reject with.
+   */
+  #stop(failure: unknown): void {
+    if (this.#stopped === undefined) {
+      this.#stopped = { failure };
+      this.#endBackoffs();
+    }
+  }
+
+  /**
+   * Make one RPC call under the context's limit, retrying what its class allows.
+   *
+   * Sits below the memos, so only a final failure is memoised. The permit is held through the
+   * backoffs too. A call that cannot go ahead rejects without being sent: with the failure that
+   * stopped the scope, or a plain `Error` ("storage read cancelled") after {@link abort}.
+   *
+   * @param context - The decoder context the call belongs to.
+   * @param blockTag - The block the call asks about, named by a `PrunedStateError`; `undefined`
+   *   for a call about no block, whose pruned-looking failure then propagates unchanged.
+   * @param call - Sends the call. Called once per attempt.
+   * @returns What `call` resolves to.
+   * @throws {PrunedStateError} when the failure is classified `pruned`.
+   * @throws The last failure unchanged, for every other class.
+   */
+  #send<T>(
+    context: StorageDecoderContext,
+    blockTag: BlockTag | undefined,
+    call: () => T | Promise<T>
+  ): Promise<T> {
+    const limiter = limiterFor(context);
+    return limiter.run(async () => {
+      for (let attempt = 1; ; attempt += 1) {
+        if (this.#stopped !== undefined) throw this.#stopped.failure;
+        if (this.#aborted) throw new Error('storage read cancelled: the call already failed');
+        try {
+          return await invoke(call);
+        } catch (error) {
+          const kind = classifyFailure(context, error);
+          if (kind === 'fatal' || kind === 'pruned') {
+            const failure =
+              kind === 'pruned' && blockTag !== undefined ? new PrunedStateError(blockTag, error) : error;
+            this.#stop(failure);
+            throw failure;
+          }
+          this.#failures += 1;
+          if (this.#failures > limiter.retry.budget) this.#stop(error);
+          if (kind === 'exhausted' || attempt >= limiter.retry.maxAttempts) throw error;
+          if (this.#stopped !== undefined || this.#aborted) throw error;
+
+          const backoff = limiter.backoff(attempt);
+          const end = (): void => backoff.cancel();
+          this.#backoffs.add(end);
+          await backoff.elapsed;
+          this.#backoffs.delete(end);
+        }
+      }
+    });
+  }
+
+  /**
+   * The latest block number, under the context's limit and with retries.
+   *
+   * @param context - The decoder context; its `getBlockNumber` must be supplied.
+   * @returns The block number.
+   * @throws Whatever `getBlockNumber` throws or rejects with, as a rejection.
+   */
+  blockNumber(context: StorageDecoderContext): Promise<bigint> {
+    return this.#send(context, undefined, () => context.getBlockNumber?.() as Promise<bigint>);
+  }
+
+  /**
+   * The context's `getCode`, under its limit and with retries, for the contract check.
+   *
+   * @param context - The decoder context the check belongs to.
+   * @returns The function to hand to the check, or `undefined` when the context has none.
+   */
+  #limitedGetCode(context: StorageDecoderContext): StorageDecoderContext['getCode'] {
+    const { getCode } = context;
+    if (getCode === undefined) return undefined;
+    return (address, blockTag) => this.#send(context, blockTag, () => getCode.call(context, address, blockTag));
   }
 
   /** The memo for one decoder context (compared by identity), created on first use. */
@@ -213,33 +294,35 @@ export class CallScope {
     const key = memoKey(fullyQualifiedName, String(address).toLowerCase(), blockTag);
     let pending = codeChecks.get(key);
     if (pending === undefined) {
-      pending = handled(assertContractMatchesTarget(context, fullyQualifiedName, address, blockTag));
+      pending = handled(
+        assertContractMatchesTarget(
+          context,
+          this.#limitedGetCode(context),
+          fullyQualifiedName,
+          address,
+          blockTag
+        )
+      );
       codeChecks.set(key, pending);
     }
     return pending;
   }
 
   /**
-   * A slot reader bound to one address and one block tag, limited by this call's semaphore.
+   * A slot reader bound to one address and one block tag, limited by the context's limiter.
    *
-   * Each read waits for a permit, then is sent unless the scope has been aborted in the
+   * Each read waits for a permit, then is sent unless the scope has been stopped in the
    * meantime. Nothing is memoised here: asking twice for a slot sends two reads.
    *
    * @param context - The decoder context whose `getStorageAt` is called.
    * @param address - The address every read goes to.
    * @param blockTag - The block every read is sent with.
-   * @returns The bound reader. Its promise rejects with a plain `Error` ("storage read
-   *   cancelled") when the scope was aborted before the read was sent, and otherwise with
-   *   whatever `getStorageAt` throws or rejects with.
+   * @returns The bound reader. Its promise rejects as described on {@link CallScope.#send}, and
+   *   otherwise with whatever `getStorageAt` throws or rejects with.
    */
   reader(context: StorageDecoderContext, address: string, blockTag: BlockTag): SingleSlotReader {
     return (slot) =>
-      this.#semaphore.run(() =>
-        invoke(() => {
-          if (this.#aborted) throw new Error('storage read cancelled: the call already failed');
-          return context.getStorageAt({ address, slot, blockTag });
-        })
-      );
+      this.#send(context, blockTag, () => context.getStorageAt({ address, slot, blockTag }));
   }
 
   /**
@@ -308,29 +391,33 @@ export function requireComplete(
  * {@link ContractMismatchError}. When only the artifact's bytecode is missing or empty,
  * `getCode` has already been called, and a failure of it is still reported.
  *
- * @param context - Supplies `getCode` and `getDeployedBytecode`, both optional.
+ * @param context - Supplies `getDeployedBytecode`, which is optional.
+ * @param getCode - Fetches the actual side; also optional. Without either, nothing is checked.
  * @param fullyQualifiedName - The contract whose artifact is the expected side.
  * @param address - The address whose code is the actual side.
  * @param blockTag - The block the code is fetched at.
- * @throws {ContractMismatchError} when there is no code at the address, the code length
- *   differs from the artifact's, or the first 32 bytes differ.
+ * @throws {ContractMismatchError} when there is no code at the address, or
+ *   {@link compareBytecode} finds that the code does not match the artifact.
  * @throws Whatever `getDeployedBytecode` or `getCode` throws or rejects with; if both fail,
  *   the artifact's error is the one reported.
  */
 async function assertContractMatchesTarget(
   context: StorageDecoderContext,
+  getCode: StorageDecoderContext['getCode'],
   fullyQualifiedName: string,
   address: string,
   blockTag: BlockTag
 ): Promise<void> {
-  const { getCode, getDeployedBytecode } = context;
+  const { getDeployedBytecode } = context;
   if (getCode === undefined || getDeployedBytecode === undefined) return;
 
   // Both sides are fetched together, but awaited artifact-first: a failure to load the
   // artifact is reported in preference to a failure of the RPC call.
   const expectedPending = invoke(() => getDeployedBytecode(fullyQualifiedName));
   const actualPending = handled(invoke(() => getCode(address, blockTag)));
-  const expected = normalizeCode(await expectedPending);
+  const artifact = await expectedPending;
+  const bytecode = typeof artifact === 'string' ? { object: artifact } : (artifact ?? undefined);
+  const expected = normalizeCode(bytecode?.object);
   const actual = normalizeCode(await actualPending);
   if (expected === undefined || expected.length === 0) return;
 
@@ -338,24 +425,13 @@ async function assertContractMatchesTarget(
     throw new ContractMismatchError(
       fullyQualifiedName,
       address,
-      'there is no contract code at that address'
+      'there is no contract code at that address',
+      'no-code'
     );
   }
-  if (actual.length !== expected.length) {
-    throw new ContractMismatchError(
-      fullyQualifiedName,
-      address,
-      `the deployed code is ${actual.length / 2} bytes but the artifact's deployedBytecode is` +
-        ` ${expected.length / 2} bytes`
-    );
-  }
-  const prefixLength = Math.min(64, expected.length);
-  if (actual.slice(0, prefixLength) !== expected.slice(0, prefixLength)) {
-    throw new ContractMismatchError(
-      fullyQualifiedName,
-      address,
-      "the deployed code's first 32 bytes differ from the artifact's deployedBytecode"
-    );
+  const mismatch = compareBytecode({ ...bytecode, object: expected }, actual);
+  if (mismatch !== undefined) {
+    throw new ContractMismatchError(fullyQualifiedName, address, mismatch, 'code-differs');
   }
 }
 
@@ -445,7 +521,9 @@ export async function readLeaf(
  * Every RPC call the path needs up front goes out together: the contract check, each array
  * length, and the value itself. What a caller observes is still decided in a fixed order —
  * layout errors, a contract mismatch, path errors, the outermost out-of-bounds index, then
- * the value — so a read issued early can waste a call but can never change the answer.
+ * the value — so a read issued early can waste a call but never changes a value returned. The
+ * order is for the query's own failures: a call the scope stopped rejects with what stopped it,
+ * so that failure can be reported in place of an earlier one in the order.
  *
  * @remarks
  * How that order is enforced:

@@ -19,16 +19,14 @@
  * Both ways also fail when a bundle exports an error class that the tables below do not list,
  * so a class added to the package cannot go unchecked.
  *
- * Usage: node scripts/check-dist-error-names.mjs [--dist <dir>]
+ * Usage: node scripts/check-dist-error-names.mjs
  */
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const args = process.argv.slice(2);
-const distFlag = args.indexOf('--dist');
-const DIST = resolve(distFlag === -1 ? 'dist' : (args[distFlag + 1] ?? 'dist'));
+const DIST = resolve('dist');
 
 /** Class name -> constructor arguments that are valid for it. */
 const CORE_ERRORS = {
@@ -39,6 +37,7 @@ const CORE_ERRORS = {
   AmbiguousVariableError: ['v', ['A', 'B']],
   PathSegmentCountMismatchError: ['v', 1, 'detail'],
   PathSegmentKindMismatchError: ['v', 0, 'detail'],
+  PrunedStateError: [5n],
   IndexOutOfBoundsError: [1n, 0n, 'uint256[]'],
   UnsupportedTypeError: ['label', 't_id'],
   DumpTooLargeError: ['array', 2n, 1, 'path'],

@@ -32,6 +32,7 @@
 import { extendConfig, subtask } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY_GET_COMPILER_INPUT } from 'hardhat/builtin-tasks/task-names';
 import type { CompilerInput } from 'hardhat/types/artifacts';
+import { isPlainObject } from '../shared/isPlainObject.js';
 
 /** solc's `settings.outputSelection`: source glob -> contract glob -> requested outputs. */
 type OutputSelection = Record<string, Record<string, string[]>>;
@@ -52,11 +53,6 @@ const REQUIRED_SOURCE_OUTPUTS = ['ast'] as const;
 const ANY = '*';
 /** solc's contract key for outputs of the source file as a whole, such as `ast`. */
 const WHOLE_SOURCE = '';
-
-/** True for a non-null, non-array object. */
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 /**
  * Copy `existing` and union the outputs this package requires into the `*`/`*` and `*`/``

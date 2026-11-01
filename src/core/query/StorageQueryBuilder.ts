@@ -9,11 +9,13 @@
  */
 
 import type { ParsedStorageLayout } from '../layout/parseStorageLayout.js';
+import type { RpcErrorClass } from '../rpc/classifyRpcError.js';
 import type { BlockTag, GetStorageAt } from '../rpc/getStorageAt.js';
 import type { DecodedValue } from '../slots/decode.js';
 import type { MappingKeyValue, PathSegment } from '../slots/deriveSlot.js';
 import { type ReadAllOptions, type StorageDumpResult, readAllAt } from './dump.js';
 import { CallScope, type QueryState, readOne } from './execute.js';
+import { type StorageDecoderOptions, configureLimiter } from './limiter.js';
 
 /** What one {@link StorageQueryBuilder.read} resolves to: the decoded value and where it was. */
 export interface StorageReadResult {
@@ -36,12 +38,33 @@ export interface StorageReadResult {
   readonly blockTag: BlockTag;
 }
 
+/** A run of bytes in runtime bytecode, as solc reports immutable and library references. */
+export interface ByteRange {
+  /** Offset of the first byte from the start of the code. */
+  readonly start: number;
+  /** Number of bytes. */
+  readonly length: number;
+}
+
+/** A contract's runtime bytecode, with what solc says will differ once it is deployed. */
+export interface ExpectedBytecode {
+  /** The bytecode as a hex string, with or without a `0x` prefix. */
+  readonly object: string;
+  /** solc's `immutableReferences`: AST id -> where that immutable's value goes. */
+  readonly immutableReferences?: Readonly<Record<string, readonly ByteRange[]>>;
+  /** solc's `linkReferences`: source -> library -> where that library's address goes. */
+  readonly linkReferences?: Readonly<Record<string, Readonly<Record<string, readonly ByteRange[]>>>>;
+}
+
 /**
  * Everything the builder needs from the outside world. Each Hardhat-major adapter supplies
  * its own implementation; the unit suite supplies an in-memory one.
  *
  * A function here may throw synchronously or reject; either way the failure rejects the
- * terminal method that needed it, unchanged.
+ * terminal method that needed it, unchanged, with two exceptions for the RPC functions: a
+ * failure a retry can help with is re-sent first, and a pruned-state failure is raised as
+ * `PrunedStateError`. An RPC function must have a timeout of its own: one that never settles
+ * holds a permit of the context's concurrency limit for good.
  */
 export interface StorageDecoderContext {
   /**
@@ -61,10 +84,12 @@ export interface StorageDecoderContext {
    * The check runs only when this and `getCode` are both supplied.
    *
    * @param fullyQualifiedName - The name passed to `.contract()`, unchanged.
-   * @returns The bytecode as a hex string, with or without a `0x` prefix. `undefined` or an
-   *   empty string skips the check for that contract.
+   * @returns The bytecode as a hex string, with or without a `0x` prefix, or as an
+   *   {@link ExpectedBytecode} carrying the compiler's references. A plain string has no
+   *   references, so a contract with immutables is then rejected. `undefined` or empty bytecode
+   *   skips the check for that contract.
    */
-  getDeployedBytecode?(fullyQualifiedName: string): Promise<string | undefined>;
+  getDeployedBytecode?(fullyQualifiedName: string): Promise<string | ExpectedBytecode | undefined>;
   /**
    * On-chain code at an address. Enables the contract/address sanity check.
    *
@@ -84,6 +109,16 @@ export interface StorageDecoderContext {
    * @returns The block number to pin the dump to.
    */
   getBlockNumber?(): Promise<bigint>;
+  /**
+   * For adapters: classify a failed `getStorageAt`, `getCode` or `getBlockNumber`, for what only
+   * the adapter can tell, falling back to the core's `classifyRpcError`. Never called for a
+   * `StorageDecoderError`, a `RangeError` or a `TypeError`, which always propagate unchanged,
+   * unless the `TypeError` has a transport failure under it: that one does reach this.
+   *
+   * @param error - What the function threw or rejected with.
+   * @returns What the retry layer should do; see {@link RpcErrorClass}.
+   */
+  classifyRpcError?(error: unknown): RpcErrorClass;
 }
 
 /** State of a freshly created builder: no contract, target or variable, an empty path. */
@@ -282,7 +317,9 @@ export class StorageQueryBuilder {
    * When several things are wrong at once, the error reported is decided in a fixed order:
    * a missing `.contract()`/`.target()`/`.name()`, a layout that cannot be loaded, a contract
    * mismatch, a path that does not fit the type, the outermost out-of-bounds index, and only
-   * then a failure to read or decode the value.
+   * then a failure to read or decode the value. That order is for the query's own failures: a
+   * call stopped by another failure, such as a read in backoff when another read is refused,
+   * rejects with that failure, so only a successful result rules the earlier ones out.
    *
    * Not a snapshot: every call carries the query's block tag, so under a moving tag such as
    * `"latest"` the contract check, a length read and the value read can land on different
@@ -315,11 +352,19 @@ export class StorageQueryBuilder {
    * @throws {RangeError} when the slot read for a `string`/`bytes` is not a valid header (a
    *   short form above 31 bytes, or a long form below 32 bytes) or declares more than 16 MiB,
    *   or when the context returns a word longer than 32 bytes.
-   * @remarks Anything the context's own functions throw or reject with — a provider failure,
-   *   an adapter's layout error — propagates unchanged.
+   * @throws {PrunedStateError} when the node no longer holds the state of the block.
+   * @remarks Anything else the context's own functions throw or reject with — a provider failure,
+   *   an adapter's layout error — propagates unchanged, once any retries it qualifies for are
+   *   used up.
    */
   async read(): Promise<StorageReadResult> {
-    return readOne(this.#context, this.#state, new CallScope());
+    const scope = new CallScope();
+    try {
+      return await readOne(this.#context, this.#state, scope);
+    } finally {
+      // An early failure must not leave queued reads and backoffs holding the context's limit.
+      scope.abort();
+    }
   }
 
   /**
@@ -327,11 +372,18 @@ export class StorageQueryBuilder {
    *
    * The chains may mix variables, contracts and addresses. The contract/address check runs
    * once per contract and address, and all reads go out together. If any query fails, the
-   * call rejects with the error of the first failing query in the list.
+   * call rejects with the error of the first failing query in the list, where a query stopped by
+   * another's failure counts as failing with that failure (see below).
    *
    * The builder this is called on contributes nothing: each query runs with its own
-   * context, contract, target, path and block. Every query is run to completion or failure
-   * before the call settles, and no partial results are returned.
+   * context, contract, target, path and block. The call settles once every query has, and no
+   * partial results are returned. Since one failed RPC call means the call will reject, a
+   * `pruned` or `fatal` failure, or one past the retry budget, stops it: calls already sent
+   * complete, and the rest reject with that failure instead of being sent. So when several things
+   * are wrong at once, a query whose own calls had not gone out reports that failure, and which
+   * error comes back depends on timing. A `PrunedStateError` or a provider error from this call
+   * does not rule out a wrong address or a bad index in another query; only a successful result
+   * does.
    *
    * Not a snapshot: under a moving tag such as `"latest"` the queries can land on different
    * blocks; give each chain `.at(blockNumber)`.
@@ -341,7 +393,7 @@ export class StorageQueryBuilder {
    * @throws {TypeError} when an element is not a builder of this exact class (for example one
    *   created by the other adapter, or by the other module-format build of this package).
    * @throws Whatever {@link StorageQueryBuilder.read} would throw for the first failing query
-   *   in the list.
+   *   in the list, or the failure that stopped that query.
    */
   async readMany(queries: readonly StorageQueryBuilder[]): Promise<StorageReadResult[]> {
     const scope = new CallScope();
@@ -357,6 +409,7 @@ export class StorageQueryBuilder {
         return readOne(query.#context, query.#state, scope);
       })
     );
+    scope.abort();
     return settled.map((result) => {
       if (result.status === 'rejected') throw result.reason;
       return result.value;
@@ -375,7 +428,7 @@ export class StorageQueryBuilder {
    * @param keys - The keys to read, each appended to this chain's path as one `.key()`.
    * @returns One result per key, in the order given.
    * @throws Whatever {@link StorageQueryBuilder.read} would throw for the first failing key
-   *   in the list.
+   *   in the list, or the failure that stopped it; see {@link StorageQueryBuilder.readMany}.
    */
   async readKeys(keys: readonly MappingKeyValue[]): Promise<StorageReadResult[]> {
     return this.readMany(keys.map((key) => this.key(key)));
@@ -395,8 +448,8 @@ export class StorageQueryBuilder {
    * @param indices - The zero-based indices to read, each appended as one `.index()`.
    * @returns One result per index, in the order given.
    * @throws Whatever {@link StorageQueryBuilder.read} would throw for the first failing index
-   *   in the list. One out-of-range index rejects the whole call; the in-range elements are
-   *   not returned.
+   *   in the list, or the failure that stopped it; see {@link StorageQueryBuilder.readMany}. One
+   *   out-of-range index rejects the whole call; the in-range elements are not returned.
    */
   async readIndices(indices: readonly (number | bigint)[]): Promise<StorageReadResult[]> {
     return this.readMany(indices.map((index) => this.index(index)));
@@ -448,10 +501,17 @@ export class StorageQueryBuilder {
    * @throws {RangeError} when a `string`/`bytes` header is invalid (a short form above 31
    *   bytes, or a long form below 32 bytes) or declares more than 16 MiB, or when the context
    *   returns a word longer than 32 bytes.
-   * @remarks Anything the context's own functions throw or reject with propagates unchanged.
+   * @throws {PrunedStateError} when the node no longer holds the state of the block.
+   * @remarks Anything else the context's own functions throw or reject with propagates
+   *   unchanged, once any retries it qualifies for are used up.
    */
   async readAll(options?: ReadAllOptions): Promise<StorageDumpResult> {
-    return readAllAt(this.#context, this.#state, options);
+    const scope = new CallScope();
+    try {
+      return await readAllAt(this.#context, this.#state, options, scope);
+    } finally {
+      scope.abort();
+    }
   }
 }
 
@@ -459,8 +519,17 @@ export class StorageQueryBuilder {
  * Entry point an adapter exposes as `hre.storageDecoder` / `connection.storageDecoder`.
  *
  * @param context - The adapter's implementation of the outside world.
+ * @param options - The concurrency limit and retry settings. They attach to the context, so every
+ *   builder on it is affected, and they replace any given for it before, with omitted ones back
+ *   at their defaults, so `{}` resets a custom limit; calls already running finish under the old
+ *   limit. Omit the argument to leave the context as it is, which is the defaults for a new one.
  * @returns An empty builder: no contract, target or variable yet, reading at `"latest"`.
+ * @throws {TypeError} when an option is not a positive integer.
  */
-export function createStorageDecoder(context: StorageDecoderContext): StorageQueryBuilder {
+export function createStorageDecoder(
+  context: StorageDecoderContext,
+  options?: StorageDecoderOptions
+): StorageQueryBuilder {
+  if (options !== undefined) configureLimiter(context, options);
   return new StorageQueryBuilder(context);
 }

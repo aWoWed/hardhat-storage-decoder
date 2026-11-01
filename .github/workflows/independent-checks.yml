@@ -1,0 +1,110 @@
+# AC 19 evidence: the read suite on Anvil, Geth and Reth. A push to main or a scheduled or manual run
+# is bound to its commit by the head SHA. A pull_request run is an early signal and never evidence:
+# scripts/release-gate.mjs ignores it.
+# Only a run where all three really ran may succeed, so exit 3 ("unavailable") fails it.
+# Binaries are pinned by SHA-512 rather than by image digest, since scripts/check-secrets.mjs refuses
+# a bare SHA-256 in a tracked file. Reth's SHA-256 matched the digest GitHub lists for the asset.
+# Geth's archive has no such listing: the hash records what gethstore served on 2026-10-31.
+name: Independent checks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '43 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clients:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      GETH_VERSION: 1.17.10
+      GETH_COMMIT: 1df30b18
+      GETH_SHA512: 53fe7f6a9f7c772297a99c7fbc316112b59c2f225142f160b1225eb6eafbc992b6c6004d55bed03e6ca9cd376be4a5976daf2f61b7a5dc0300296e04d4e2c7b2
+      RETH_VERSION: 2.9.0
+      RETH_SHA512: 19233d0080906cd8d4bd44cc526537b2be8b4994e0def9ecca0be30ed26d977a29a153fbed1dbae52140a945ce50f9beebd33bd940bf636f42f6959981a72610
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.14.0
+          package-manager-cache: false
+      - uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1.9.2
+        with:
+          version: v1.5.1
+          cache: false
+      - run: npm ci --no-audit --no-fund
+      - name: Install Geth and Reth
+        shell: bash
+        run: |
+          tools="$RUNNER_TEMP/tools"
+          mkdir -p "$tools"
+          geth="geth-linux-amd64-${GETH_VERSION}-${GETH_COMMIT}.tar.gz"
+          curl --fail --silent --show-error --location --output "$RUNNER_TEMP/$geth" \
+            "https://gethstore.blob.core.windows.net/builds/$geth"
+          echo "$GETH_SHA512  $RUNNER_TEMP/$geth" | sha512sum -c -
+          tar -xzf "$RUNNER_TEMP/$geth" -C "$tools" --strip-components=1
+          reth="reth-v${RETH_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+          curl --fail --silent --show-error --location --output "$RUNNER_TEMP/$reth" \
+            "https://github.com/paradigmxyz/reth/releases/download/v${RETH_VERSION}/$reth"
+          echo "$RETH_SHA512  $RUNNER_TEMP/$reth" | sha512sum -c -
+          tar -xzf "$RUNNER_TEMP/$reth" -C "$tools" reth
+          echo "GETH_BIN=$tools/geth" >> "$GITHUB_ENV"
+          echo "RETH_BIN=$tools/reth" >> "$GITHUB_ENV"
+      - name: Run the read suite on every client
+        shell: bash
+        run: |
+          mkdir independent-results
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          anvil --version | tee independent-results/versions.txt
+          "$GETH_BIN" version | tee -a independent-results/versions.txt
+          "$RETH_BIN" --version | tee -a independent-results/versions.txt
+          exact() { grep -qE "(^|[^0-9.])${1//./\\.}(\$|[^0-9.])" independent-results/versions.txt; }
+          exact 1.5.1
+          exact "$GETH_VERSION"
+          exact "$RETH_VERSION"
+          set +e
+          npm run clients -- all > independent-results/clients.log 2>&1
+          code=$?
+          set -e
+          stop="$(openssl rand -hex 16)"
+          echo "::stop-commands::$stop"
+          cat independent-results/clients.log
+          echo "::$stop::"
+          dirty="$(git status --porcelain)"
+          if [ -n "$dirty" ]; then
+            echo "::error title=Tree changed::The run changed tracked files, so it does not describe commit $GITHUB_SHA."
+            exit 1
+          fi
+          case "$code" in
+            0)
+              echo "Anvil, Geth and Reth passed at $GITHUB_SHA." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            3)
+              echo "::error title=Client unavailable::A client could not run (exit 3). This never counts as a pass."
+              echo "**UNAVAILABLE** (exit 3) at $GITHUB_SHA." >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+            *)
+              echo "::error title=Client check failed::npm run clients exited $code."
+              echo "**FAILED** (exit $code) at $GITHUB_SHA." >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: independent-checks-${{ github.sha }}-${{ github.run_attempt }}
+          path: independent-results/
+          if-no-files-found: error
+          retention-days: 90

@@ -48,18 +48,41 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PACKAGE = 'hardhat-storage-decoder';
 const HH2_WORKSPACE = join(ROOT, 'test', 'fixtures', 'hh2-project');
 
+/** Names taken out of the public surface, which neither adapter may bring back. */
+const FORBIDDEN_EXPORTS = [
+  'attachStorageDecoder',
+  'createGetCode',
+  'createGetStorageAt',
+  'createGetBlockNumber',
+  'Hardhat3LayoutReader',
+  'withStorageLayoutOutputSelection',
+  'STORAGE_LAYOUT_SELECTOR',
+  'MANUAL_OUTPUT_SELECTION_SNIPPET',
+  'ensureStorageLayoutOutput',
+  'BuildInfoReader',
+];
+
 /** Names both adapters must export in both module formats. */
 const REQUIRED_EXPORTS = [
   'AmbiguousVariableError',
+  'PrunedStateError',
   'StorageDecoderError',
   'StorageQueryBuilder',
+  'classifyReadFailure',
   'extractConstantAndImmutableNames',
   'extractDeclaringContracts',
   'extractUserDefinedValueTypes',
   'parseStorageLayout',
 ];
 const REQUIRED_HH2_EXPORTS = [...REQUIRED_EXPORTS, 'StorageLayoutNotAvailableError', 'createHardhatStorageDecoder'];
-const REQUIRED_HH3_EXPORTS = [...REQUIRED_EXPORTS, 'MissingStorageLayoutError', 'default', 'storageDecoderPlugin'];
+const REQUIRED_HH3_EXPORTS = [
+  ...REQUIRED_EXPORTS,
+  'MissingStorageLayoutError',
+  'createStorageDecoder',
+  'createStorageDecoderContext',
+  'default',
+  'storageDecoderPlugin',
+];
 
 /** Shared by every child script: print one JSON line describing the outcome. */
 const REPORT = `
@@ -89,6 +112,31 @@ try {
   'import.mjs': `${REPORT}
 try {
   report({ ok: true, keys: Object.keys(await import(process.argv[2])).sort() });
+} catch (error) {
+  report(describe(error));
+}
+`,
+  'cross-build.mjs': `import { createRequire } from 'node:module';
+${REPORT}
+try {
+  const imported = await import(process.argv[2]);
+  const required = createRequire(import.meta.url)(process.argv[2]);
+  const problems = [];
+  for (const [label, from, to] of [
+    ['require -> import', required, imported],
+    ['import -> require', imported, required],
+  ]) {
+    if (from.PrunedStateError === to.PrunedStateError) {
+      problems.push(label + ': the builds share one class, so this proves nothing');
+    }
+    if (to.classifyReadFailure(new from.PrunedStateError(5n)) !== 'pruned') {
+      problems.push(label + ': PrunedStateError');
+    }
+    if (to.classifyReadFailure(new from.DumpInconsistentError('p', 1n, 2n)) !== 'wrong-data') {
+      problems.push(label + ': DumpInconsistentError');
+    }
+  }
+  report({ ok: true, problems });
 } catch (error) {
   report(describe(error));
 }
@@ -189,6 +237,9 @@ function expectExports(outcome, required) {
   const problems = required
     .filter((name) => !outcome.keys.includes(name))
     .map((name) => `${name} is not exported`);
+  for (const name of FORBIDDEN_EXPORTS) {
+    if (outcome.keys.includes(name)) problems.push(`${name} must not be exported`);
+  }
   if (outcome.decoder !== undefined && outcome.decoder !== 'function') {
     problems.push(`hre.storageDecoder.contract is ${outcome.decoder}, expected function`);
   }
@@ -246,6 +297,11 @@ try {
   if (hh3Required.ok && hh3Imported.ok) {
     check('./hardhat3 (same exports in both)', expectSameKeys(hh3Imported.keys, hh3Required.keys));
   }
+  const crossBuild = load(rootStage, 'cross-build.mjs', hh3);
+  check(
+    "./hardhat3 (each build classifies the other build's errors)",
+    crossBuild.ok ? crossBuild.problems : [failure(crossBuild)]
+  );
 
   const hh2 = `${PACKAGE}/hardhat2`;
   // Nothing in these two children loads `hardhat` first, so no context exists when the plugin

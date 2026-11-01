@@ -49,9 +49,7 @@ Everything below uses these symbols:
 | Context member | Supplied by |
 |---|---|
 | `getLayout`, `getDeployedBytecode` | `createBuildInfoReader(hre)` in `src/hardhat2/readBuildInfo.ts` |
-| `getStorageAt` | `createGetStorageAt` in `src/hardhat2/provider.ts` |
-| `getCode` | `createGetCode` in `src/hardhat2/provider.ts` |
-| `getBlockNumber` | `createGetBlockNumber` in `src/hardhat2/provider.ts` |
+| `getStorageAt`, `getCode`, `getBlockNumber` | `createProviderReaders` in `src/hardhat2/provider.ts`, over `createRpcReaders` in `src/core/rpc/createRpcReaders.ts` |
 
 The provider is passed as a function (`() => hre.network.provider`), so no network is touched until a query runs.
 
@@ -291,11 +289,11 @@ The offset stays a separate field. It is never folded into the slot number.
 
 For our query that is three RPC calls in flight at once: `eth_getCode(address)`, `eth_getStorageAt(address, m)` and `eth_getStorageAt(address, e)`.
 
-**The contract check** — `assertContractMatchesTarget`. It fetches the artifact's deployed bytecode (`getDeployedBytecode`) and the on-chain code (`getCode`) together and throws `ContractMismatchError` if there is no code at the address, if the two differ in length, or if their first 32 bytes differ. It is a heuristic, not a proof: only total length and the first 32 bytes are compared. It is skipped when the context lacks either function, or when the artifact has no deployed bytecode. A proxy address read with the implementation's contract name fails this check; there is no proxy detection.
+**The contract check** — `assertContractMatchesTarget`. It fetches the artifact's deployed bytecode (`getDeployedBytecode`) and the on-chain code (`getCode`) together and throws `ContractMismatchError` if there is no code at the address, or if `compareBytecode` finds the two differ. That comparison covers every byte except the metadata trailer of each side, immutables and library addresses at the offsets solc reports, library placeholders, and the metadata hash of embedded `new X` code where both sides have it at the same offset. A contract with immutables whose references are not supplied is rejected, and the error says so; the check is not weakened. Builds with another `evmVersion` or optimizer setting are rejected too. It is skipped when the context lacks either function, or when the artifact has no deployed bytecode. A proxy address read with the implementation's contract name fails this check; there is no proxy detection.
 
 **The memos** — `CallScope` holds three maps per context: `layouts`, `codeChecks` (keyed by contract name, lower-cased address and block tag) and `lengths` (keyed by lower-cased address, block tag and slot). A plain `read()` creates its own `CallScope`, so the memos only pay off in `readMany` (and its sugar `readKeys`/`readIndices`), where many queries share one scope. Nothing is remembered between calls. Value reads are not shared.
 
-**The concurrency limit** — `scope.reader` wraps `context.getStorageAt` in a `Semaphore` with `MAX_CONCURRENT_READS = 256` permits. Only storage reads go through it; `eth_getCode` does not. The limit is irrelevant to this two-read query and matters for `readMany`, long strings and `readAll`.
+**The concurrency limit and retries** — `CallScope.#send` runs `getStorageAt`, `getCode` and `getBlockNumber` under the context's `Limiter` (`src/core/query/limiter.ts`), a `Semaphore` with 16 permits by default, looked up per context and shared by every call on it. The limit is irrelevant to this query and matters for `readMany`, long strings and `readAll`. A failure is classified by `context.classifyRpcError` or the core's `classifyRpcError`: `retryable` is sent again up to `maxAttempts` with a full-jitter backoff that keeps its permit, `exhausted` is not sent again, `pruned` becomes `PrunedStateError`, and `fatal` propagates unchanged. `retryable` and `exhausted` failures count against one call's budget. A `pruned` or `fatal` failure, or one past the budget, stops the scope: queued calls reject with that failure unsent, since the terminal method rejects in every such case. `read()` and the others abort their scope as they settle, so an early mismatch leaves nothing queued or in backoff. This sits below the memos, so only a final failure is memoised.
 
 **Error precedence** — `awaitObligationsInOrder` (in `src/core/slots/decode.ts`) awaits the length reads strictly in path order and does not look at read `i + 1` until obligation `i` has passed:
 
@@ -314,17 +312,14 @@ Reads are wrapped in `handled(...)`, which attaches a no-op `catch` so that a re
 
 `src/core/rpc/getStorageAt.ts` defines the seam, not the transport: `GetStorageAt` takes a `StorageReadRequest` (`{ address, slot, blockTag }`) and must resolve to exactly 32 bytes; `SingleSlotReader` is the same thing with address and block already bound (what `scope.reader` returns). The file also holds the formatting helpers both adapters use.
 
-The HH2 implementation, `createGetStorageAt` in `src/hardhat2/provider.ts`:
+`createRpcReaders` in `src/core/rpc/createRpcReaders.ts` is the implementation both adapters share, given a way to send one request:
 
 ```ts
-    const result: unknown = await getProvider().send('eth_getStorageAt', [
-      address,
-      formatSlot(slot),
-      formatBlockTag(blockTag),
-    ]);
+      const params = [address, formatSlot(slot), formatBlockTag(blockTag)];
+      const result = await call('eth_getStorageAt', params);
 ```
 
-The HH3 one (`src/hardhat3/provider.ts`) sends the same three parameters through `provider.request({ method, params })`. Both reject a non-string result with a `TypeError` and pass the string through `toStorageWord`, which left-pads short results such as `"0x0"` to 32 bytes and rejects anything longer.
+`createProviderReaders` supplies that call: `getProvider().send(method, params)` in `src/hardhat2/provider.ts`, `provider.request({ method, params })` in `src/hardhat3/provider.ts`. A non-string result is a `TypeError`, in each adapter's own wording, and a string goes through `toStorageWord`, which left-pads short results to 32 bytes and rejects anything longer.
 
 | Helper | Behaviour |
 |---|---|
@@ -398,5 +393,5 @@ Take `longText` in `test/fixtures/contracts/StringStorage.sol` (declared slot 1;
 | A string decodes truncated, empty or as garbage | `src/core/slots/decode.ts` | `resolveReadPlan`, `decode` |
 | "no storageLayout" after installing | `src/hardhat2/ensureStorageLayoutOutput.ts`, `src/hardhat3/ensureStorageLayoutOutput.ts` | `ensureStorageLayoutOutput`, `withStorageLayoutOutputSelection` |
 | A stale layout after recompiling, or a contract not found | `src/hardhat2/readBuildInfo.ts`, `src/hardhat3/readBuildInfo.ts`, `src/shared/artifactStamp.ts` | `createBuildInfoReader`, `Hardhat3LayoutReader`, `sameStamp` |
-| A read hits the wrong block, or a block tag is rejected | `src/core/rpc/getStorageAt.ts`, `src/hardhat2/provider.ts`, `src/hardhat3/provider.ts` | `formatBlockTag`, `createGetStorageAt` |
+| A read hits the wrong block, or a block tag is rejected | `src/core/rpc/getStorageAt.ts`, `src/hardhat2/provider.ts`, `src/hardhat3/provider.ts` | `formatBlockTag`, `createRpcReaders`, `createProviderReaders` |
 | A dump is too large, skips a mapping or reports inconsistency | `src/core/query/dump.ts` | `readAllAt`, `validatePatterns`, `isFixedBlockTag` |

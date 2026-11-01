@@ -21,7 +21,7 @@ const MESSAGE =
  * Thrown when the package root is imported. Carries guidance naming both subpaths, so the
  * failure says which one to import instead of surfacing as a bare resolution error.
  */
-export class HardhatStorageDecoderEntrypointError extends Error {
+class HardhatStorageDecoderEntrypointError extends Error {
   constructor() {
     super(MESSAGE);
     this.name = 'HardhatStorageDecoderEntrypointError';
@@ -31,3 +31,5 @@ export class HardhatStorageDecoderEntrypointError extends Error {
 // Throws at module evaluation on purpose: the root exports nothing usable, so a successful
 // import would only defer the mistake to a confusing "undefined is not a function" later.
 throw new HardhatStorageDecoderEntrypointError();
+
+export {};

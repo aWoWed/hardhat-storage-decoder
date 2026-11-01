@@ -1,0 +1,84 @@
+# Reads the public Sepolia mocks through both adapters. Keyless endpoints come from the defaults in
+# scripts/readback.mjs. Scheduled runs need this file on the default branch, and GitHub disables
+# the schedule after 60 idle days (docs/public-testnet.md).
+name: Read-back
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  readback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.14.0
+          package-manager-cache: false
+      # Only a manifest with exactly no chains skips, and that is reported as a skip, not a pass.
+      - name: Check there is something to read back
+        id: manifest
+        shell: bash
+        run: |
+          mkdir readback-results
+          result="$(node scripts/readback-guard.mjs)"
+          echo "$result" >> "$GITHUB_OUTPUT"
+          if [ "$result" = "no_chains=true" ]; then
+            echo "skipped: the manifest has no chains, commit=$GITHUB_SHA" > readback-results/run.txt
+            echo "::notice title=Read-back skipped::The manifest has no chains, so nothing was read. This is not a pass."
+            echo "**SKIPPED** at $GITHUB_SHA: the manifest has no chains, so nothing was read, which is not a pass." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - if: steps.manifest.outputs.no_chains != 'true'
+        run: npm ci --no-audit --no-fund
+      - name: Install the package into both deployment projects
+        if: steps.manifest.outputs.no_chains != 'true'
+        run: node --input-type=module -e "import { prepareDeploymentProjects } from './scripts/prepare-deployment-projects.mjs'; prepareDeploymentProjects();"
+      - name: Read back
+        if: steps.manifest.outputs.no_chains != 'true'
+        shell: bash
+        run: |
+          echo "commit=$GITHUB_SHA run=$GITHUB_RUN_ID attempt=$GITHUB_RUN_ATTEMPT" > readback-results/run.txt
+          set +e
+          node scripts/readback.mjs --json readback-results/readback.json > readback-results/readback.log 2>&1
+          code=$?
+          set -e
+          # The log holds text from RPC servers, which must not act as workflow commands.
+          stop="$(openssl rand -hex 16)"
+          echo "::stop-commands::$stop"
+          cat readback-results/readback.log
+          echo "::$stop::"
+          echo "exit=$code" >> readback-results/run.txt
+          case "$code" in
+            0)
+              echo "Read-back passed (exit 0) at $GITHUB_SHA." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            3)
+              echo "::warning title=Could not check::Read-back could not check (exit 3): an RPC or network problem kept an entry from being read. This is not a pass and not a wrong value."
+              echo "**COULD NOT CHECK** (exit 3) at $GITHUB_SHA. Nothing was found wrong, and not everything was read. This is not a pass." >> "$GITHUB_STEP_SUMMARY"
+              ;;
+            1)
+              echo "::error title=Read-back failed::Read-back failed (exit 1): a value, an address or the manifest does not hold."
+              echo "**FAILED** (exit 1) at $GITHUB_SHA." >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+            *)
+              echo "::error title=Read-back did not run::scripts/readback.mjs exited $code."
+              echo "**DID NOT RUN** (exit $code) at $GITHUB_SHA." >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: readback-${{ github.sha }}-${{ github.run_attempt }}
+          path: readback-results/
+          if-no-files-found: error
+          retention-days: 90

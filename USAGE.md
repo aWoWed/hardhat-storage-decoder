@@ -44,8 +44,10 @@ attached to `hre.storageDecoder` (HH2) or `connection.storageDecoder` (HH3).
 | `slots/decode.ts` | Checks bounds obligations in path order, resolves a read plan (including the short/long string split), and decodes raw bytes to native JS values. |
 | `query/errors.ts` | One typed error class per distinct failure mode. |
 | `query/StorageQueryBuilder.ts` | The fluent, immutable builder: the chain methods plus `read`, `readMany`, `readKeys`, `readIndices` and `readAll`. |
-| `query/execute.ts` | Runs one query: issues the contract check, array lengths and value together, then applies the fixed error precedence. Holds the per-call memos and the concurrency limit. |
+| `query/execute.ts` | Runs one query: issues the contract check, array lengths and value together, then applies the fixed error precedence. Holds the per-call memos and the retry loop. |
+| `query/limiter.ts` | The per-context concurrency limit and the retry settings. |
 | `query/dump.ts` | `readAll`: expands arrays, structs and supplied mapping keys level by level, with the size cap and the one-block rules. |
+| `rpc/classifyRpcError.ts` | Sorts a failed RPC call into `retryable`, `exhausted`, `pruned` or `fatal`, by the shape of the error. |
 | `rpc/getStorageAt.ts` | The `GetStorageAt`/`SingleSlotReader` interfaces plus `blockTag`/slot formatting helpers — the one seam the adapters fill in. |
 | `util/bytes.ts` | Byte-level primitives: big-endian encode/decode, left/right padding, packed-field extraction, EIP-55 checksumming, and `keccak256` (via `@noble/hashes`, the package's one runtime dependency). |
 
@@ -121,8 +123,8 @@ are not guaranteed to land on the same block:
 - every `BoundsObligation`'s array-length slot, and
 - the value's own slot (or, for `string`/`bytes`, its header slot).
 
-What the caller observes is still decided in a fixed order, so issuing a read early can waste a
-call but can never change the answer:
+What the caller observes is decided in a fixed order, so issuing a read early can waste a call but
+never changes a value that is returned:
 
 1. a layout error (`ContractNotFoundError`, …),
 2. a `ContractMismatchError`,
@@ -133,6 +135,11 @@ call but can never change the answer:
 
 If an index is out of bounds, the value that was read alongside it is discarded and
 `IndexOutOfBoundsError` is thrown. A value from an unverified index is never returned.
+
+That order holds for a query's own failures, unless its call was stopped by another failure, in
+which case the rejection is that failure: a read in backoff, or a query in a batch whose calls had
+not gone out, reports what stopped it. So `pruned` or `rpc` from a batch or a stopped call does not
+rule out a wrong address or a bad index; only a successful result rules them out.
 
 A long `string`/`bytes` needs a second round. The low bit of the header's low-order byte selects
 the form:
@@ -151,7 +158,44 @@ converts it to a native value per the leaf `ValueKind` (`uint`/`int` → `bigint
 `boolean`, `address` → EIP-55 checksummed string, `bytesN`/`bytes` → hex string, `string` →
 UTF-8 string, a function type → hex string of its raw bytes).
 
-At most 256 storage reads are in flight at once within a call.
+At most 16 RPC calls (storage, code and block number) are in flight at once on one decoder, across
+all of its calls; two decoders on one endpoint do not share the limit. A failure a retry can help
+with (a rate limit, a timeout, a dropped connection, a block a lagging backend does not know yet)
+is sent up to 3 times in all, with a growing random wait, and then reported as the provider's own
+error. One call stops retrying after 32 such failures and rejects what it still has queued. A
+deterministic error is never re-sent, and it also stops the call's queued work at once, since the
+call is going to reject anyway. A refusal such as HTTP 401 or a plan limit counts toward the 32
+without being re-sent. To change these, pass `{ maxConcurrentReads, retry:
+{ maxAttempts, baseDelayMs, maxDelayMs, budget } }`, all positive integers, to
+`createHardhatStorageDecoder(hre, options)` on Hardhat 2 or to
+`createStorageDecoder(createStorageDecoderContext(hre.artifacts, connection.provider), options)`
+on Hardhat 3; `hre.storageDecoder` and `connection.storageDecoder` use the defaults. A call can
+wait for the network's own timeout on each attempt, so set a network `timeout` on Hardhat 3, whose
+default is 300 s; `maxElements` bounds what a dump expands, not how long it takes.
+
+A read of a block whose state the node no longer holds rejects with `PrunedStateError`, which names
+the block and keeps the node's error as `cause`; for an old block it needs an archive node. `classifyReadFailure(error)`
+sorts any failure into `'pruned'`, `'wrong-data'` (an error of this package, or a `TypeError`,
+`RangeError`, `ReferenceError` or `SyntaxError`, unless it wraps a connection failure, as Node's
+`fetch` does) or `'rpc'`, and works across the CommonJS and
+ES-module builds, where `instanceof` does not.
+
+> **Warning: do not log raw provider errors if your RPC URL has a token.** Provider errors pass
+> through this plugin unchanged. Hardhat 3 status errors quote the URL's origin, so a token in the
+> host reaches the message, and Hardhat 2's rate-limit message includes the hostname. A token in the
+> path or query did not appear in what was measured on Hardhat 3.21.2, but a node's own response text
+> can quote anything, so do not rely on that. Log a fixed message or redact it first. Details are in
+> [`docs/public-testnet.md`](docs/public-testnet.md#do-not-log-raw-provider-errors-if-the-url-has-a-token).
+
+**The address check needs a matching build.** Because every byte of the code is compared, the
+`evmVersion` and optimizer settings of your build must match the deployed build, or the read rejects
+with `ContractMismatchError` and `reason: 'code-differs'`. This is a behaviour change from comparing
+the length and the first 32 bytes. Set `evmVersion` explicitly: Hardhat 2 and Hardhat 3 defaulted to
+different ones in our builds, `paris` and `cancun`.
+
+To try all of this against a real network, see
+[`docs/public-testnet.md`](docs/public-testnet.md): sealed mocks, a read example for each, what each
+kind of check proves, and known limitations. Addresses appear there after deployment.
 
 ## Installation
 
@@ -415,7 +459,11 @@ const firstThree = await vault.name('items').readIndices([0, 1, 2]);
   between calls: the code at an address can change under the same block tag (a snapshot revert,
   `hardhat_setCode`, a redeploy), so every call checks again.
 - If any query fails, the whole call rejects with the error of the **first failing query in the
-  list**. All queries are allowed to finish first, so the result is deterministic.
+  list**, and never returns partial results. A failure that stops the call, as described
+  under [the read pipeline](#the-read-pipeline), also becomes the error of every query whose
+  calls had not gone out. So the error depends on timing when several things are wrong at once:
+  `pruned` or `rpc` from a batch does not rule out a wrong address or a bad index in another of its
+  queries. Only a successful result does.
 - `readMany` does not pin a block. With the default `"latest"`, a block mined mid-call can
   split the results across two blocks; pass `.at(blockNumber)` on the chains when you need one
   consistent snapshot.
@@ -504,7 +552,7 @@ plain `TypeError`/`RangeError`, and provider failures pass through unchanged:
 | Error | Cause |
 |---|---|
 | `ContractNotFoundError` | `.contract(fqn)` names a contract with no layout in build-info |
-| `ContractMismatchError` | the code at `.target(address)` does not plausibly match `.contract(fqn)` (a `deployedBytecode` length + first-32-bytes heuristic, not a proof — skipped entirely when the adapter can't supply both `getCode`/`getDeployedBytecode`) |
+| `ContractMismatchError` | the code at `.target(address)` does not match `.contract(fqn)`. Every byte of `deployedBytecode` is compared except the metadata trailer, immutables and library addresses, so a build with another `evmVersion` or optimizer setting is rejected. `reason` is `'no-code'` or `'code-differs'`. Skipped entirely when the adapter can't supply both `getCode`/`getDeployedBytecode` |
 | `VariableNotFoundError` | unknown variable — with a distinct message when it is a `constant`/`immutable` (which solc never puts in `storageLayout`; read it via its getter instead), and when the name exists but is not declared in the contract given as `declaredIn` |
 | `AmbiguousVariableError` | the layout has more than one variable with that name (a private variable re-declared along the inheritance chain) and `.name()` was not given a `{ declaredIn }` that singles one out |
 | `PathSegmentCountMismatchError` | too few path segments (stopped on a mapping/array/struct still needing one) or too many (kept going past a terminal type) |
@@ -571,29 +619,21 @@ alongside.
 
 ### Lower-level exports
 
-Each subpath also exports the pieces its plugin is assembled from. Ordinary use never needs
-them; they are listed because they are part of the published surface.
+Beyond the plugin itself, each subpath exports what code that builds its own decoder needs.
 
 `hardhat-storage-decoder/hardhat2`:
 
 | Export | What it is |
 |---|---|
 | `createHardhatStorageDecoder(hre)` | builds a query builder for a Hardhat 2 environment — the same thing `hre.storageDecoder` returns |
-| `ensureStorageLayoutOutput()` | registers the two points at which the outputs the plugin needs are added to the compiler's `outputSelection`; already called when the subpath is loaded |
-| `BuildInfoReader` (type) | the `getLayout` / `getDeployedBytecode` pair the adapter reads build-info through |
 
 `hardhat-storage-decoder/hardhat3`:
 
 | Export | What it is |
 |---|---|
 | `storageDecoderPlugin` (also the default export) | the object to list in `plugins` |
-| `attachStorageDecoder(connection, artifacts)` | adds the lazy `storageDecoder` property to a connection; the `network.newConnection` hook calls it |
 | `createStorageDecoderContext(artifacts, provider)` | the I/O context the query builder runs on, built from an artifact manager and a provider |
-| `Hardhat3LayoutReader` | reads and caches parsed layouts and deployed bytecode from a project's artifacts and build-info |
-| `createGetStorageAt(provider)`, `createGetCode(provider)` | `eth_getStorageAt` / `eth_getCode` readers bound to an EIP-1193 provider |
-| `withStorageLayoutOutputSelection(config)` | returns a copy of a resolved config in which every compiler, including per-file overrides, requests the outputs the plugin needs; the config hook calls it |
-| `STORAGE_LAYOUT_SELECTOR` | the string `'storageLayout'` |
-| `MANUAL_OUTPUT_SELECTION_SNIPPET` | a config snippet that sets `outputSelection` by hand, quoted in the plugin's "no storage layout" messages |
+| `createStorageDecoder(context, options)` | builds a query builder on such a context |
 
 ## Supported encodings
 

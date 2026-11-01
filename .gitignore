@@ -10,6 +10,47 @@ test/fixtures/*/node_modules/
 test/fixtures/*/contracts/
 test/fixtures/*/types/
 
+# Secrets. Git does not expand braces, and `deployments/**/contracts` would ignore the source
+# mocks in deployments/contracts/, so the deployment workspaces are listed one by one.
+.env
+.env.*
+!.env.example
+*.keystore
+*.pem
+*.key
+.[eE][nN][vV]
+.npmrc
+.envrc
+key.txt
+secrets.json
+keystore.json
+.tools/
+
+# Deployment workspaces
+deployments/manifest/local/
+deployments/hh2/artifacts/
+deployments/hh2/cache/
+deployments/hh2/node_modules/
+deployments/hh2/contracts/
+deployments/hh2/types/
+deployments/hh3/artifacts/
+deployments/hh3/cache/
+deployments/hh3/node_modules/
+deployments/hh3/contracts/
+deployments/hh3/types/
+deployments/mainnet/artifacts/
+deployments/mainnet/cache/
+deployments/mainnet/node_modules/
+deployments/mainnet/contracts/
+deployments/mainnet/types/
+deployments/example/node_modules/
+independent/out/
+independent/cache/
+
+# What the workflows write into the checkout, which their dirty-tree checks must not see
+independent-results/
+readback-results/
+
 # Editor / OS
 .DS_Store
 Thumbs.db
