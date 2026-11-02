@@ -46,7 +46,6 @@ const REQUIRED_PHRASES = [
   'separate terminal',
   'cast wallet new',
   'Sealing is irreversible',
-  'not proven until G2',
   'MAINNET_ARCHIVE_RPC_URL',
   'READBACK_RPC_URL',
   'READBACK_SECOND_RPC_URL',

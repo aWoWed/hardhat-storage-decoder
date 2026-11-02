@@ -18,17 +18,17 @@ take an address for these mocks from anywhere else.
 
 | Contract | Address | Deploy block | Seal block, from which values hold |
 |---|---|---|---|
-| MockValueTypes | [`0xb40E72994fFC3c71450d55C27598c5a54edDA762`](https://sepolia.etherscan.io/address/0xb40E72994fFC3c71450d55C27598c5a54edDA762) | 12045102 | not sealed yet |
-| MockPacked | [`0xF9591D2c69c06E876cAd58bA774F73AC1b48254F`](https://sepolia.etherscan.io/address/0xF9591D2c69c06E876cAd58bA774F73AC1b48254F) | 12045119 | not sealed yet |
-| MockMappings | [`0x08dC97e14FcD82137Eb9f47a282842d72f78b585`](https://sepolia.etherscan.io/address/0x08dC97e14FcD82137Eb9f47a282842d72f78b585) | 12045122 | not sealed yet |
-| MockArrays | [`0x1Cd5b3C3bD27f912098e6aa7b872c010646B2297`](https://sepolia.etherscan.io/address/0x1Cd5b3C3bD27f912098e6aa7b872c010646B2297) | 12045133 | not sealed yet |
-| MockEnums | [`0x7C4A0fBA09082F1062b4435426c5d1632a2fBE21`](https://sepolia.etherscan.io/address/0x7C4A0fBA09082F1062b4435426c5d1632a2fBE21) | 12045144 | not sealed yet |
-| MockStructs | [`0xF445cFc79A62E826429B0B76F1C0C26aFfd95279`](https://sepolia.etherscan.io/address/0xF445cFc79A62E826429B0B76F1C0C26aFfd95279) | 12045149 | not sealed yet |
-| MockStrings | [`0xc8467490C4349556a0e3830a5A1505c7e0199cc6`](https://sepolia.etherscan.io/address/0xc8467490C4349556a0e3830a5A1505c7e0199cc6) | 12045157 | not sealed yet |
-| MockUserTypes | [`0x8c3a7D0732cC7b2828Ce89A684301A1F95A1bafc`](https://sepolia.etherscan.io/address/0x8c3a7D0732cC7b2828Ce89A684301A1F95A1bafc) | 12045162 | not sealed yet |
-| MockInheritance | [`0x9Df507873C62e9318684F492C0c3FE09Bb0BFCdA`](https://sepolia.etherscan.io/address/0x9Df507873C62e9318684F492C0c3FE09Bb0BFCdA) | 12045167 | not sealed yet |
-| MockShadowed | [`0x0d1CcD84d0A7b128eb0C422879F2fD9BB7C3C070`](https://sepolia.etherscan.io/address/0x0d1CcD84d0A7b128eb0C422879F2fD9BB7C3C070) | 12045171 | not sealed yet |
-| MockImmutable | [`0x77EbEd8Af6EC5d0DB10Bf8EaBc69773296c03962`](https://sepolia.etherscan.io/address/0x77EbEd8Af6EC5d0DB10Bf8EaBc69773296c03962) | 12045177 | not sealed yet |
+| MockValueTypes | [`0xb40E72994fFC3c71450d55C27598c5a54edDA762`](https://sepolia.etherscan.io/address/0xb40E72994fFC3c71450d55C27598c5a54edDA762) | 12045102 | 12045523 |
+| MockPacked | [`0xF9591D2c69c06E876cAd58bA774F73AC1b48254F`](https://sepolia.etherscan.io/address/0xF9591D2c69c06E876cAd58bA774F73AC1b48254F) | 12045119 | 12045524 |
+| MockMappings | [`0x08dC97e14FcD82137Eb9f47a282842d72f78b585`](https://sepolia.etherscan.io/address/0x08dC97e14FcD82137Eb9f47a282842d72f78b585) | 12045122 | 12045525 |
+| MockArrays | [`0x1Cd5b3C3bD27f912098e6aa7b872c010646B2297`](https://sepolia.etherscan.io/address/0x1Cd5b3C3bD27f912098e6aa7b872c010646B2297) | 12045133 | 12045526 |
+| MockEnums | [`0x7C4A0fBA09082F1062b4435426c5d1632a2fBE21`](https://sepolia.etherscan.io/address/0x7C4A0fBA09082F1062b4435426c5d1632a2fBE21) | 12045144 | 12045527 |
+| MockStructs | [`0xF445cFc79A62E826429B0B76F1C0C26aFfd95279`](https://sepolia.etherscan.io/address/0xF445cFc79A62E826429B0B76F1C0C26aFfd95279) | 12045149 | 12045528 |
+| MockStrings | [`0xc8467490C4349556a0e3830a5A1505c7e0199cc6`](https://sepolia.etherscan.io/address/0xc8467490C4349556a0e3830a5A1505c7e0199cc6) | 12045157 | 12045529 |
+| MockUserTypes | [`0x8c3a7D0732cC7b2828Ce89A684301A1F95A1bafc`](https://sepolia.etherscan.io/address/0x8c3a7D0732cC7b2828Ce89A684301A1F95A1bafc) | 12045162 | 12045530 |
+| MockInheritance | [`0x9Df507873C62e9318684F492C0c3FE09Bb0BFCdA`](https://sepolia.etherscan.io/address/0x9Df507873C62e9318684F492C0c3FE09Bb0BFCdA) | 12045167 | 12045531 |
+| MockShadowed | [`0x0d1CcD84d0A7b128eb0C422879F2fD9BB7C3C070`](https://sepolia.etherscan.io/address/0x0d1CcD84d0A7b128eb0C422879F2fD9BB7C3C070) | 12045171 | 12045532 |
+| MockImmutable | [`0x77EbEd8Af6EC5d0DB10Bf8EaBc69773296c03962`](https://sepolia.etherscan.io/address/0x77EbEd8Af6EC5d0DB10Bf8EaBc69773296c03962) | 12045177 | 12045533 |
 
 Past values:
 
@@ -73,7 +73,7 @@ Actions tab, and a manual dispatch checks in the meantime.
 
 Each block below is executed from this page by `npm --prefix deployments/example run read:local`,
 which checks the `value:` and `rejects:` comments. To copy one, keep the part before the comment. They
-were run on Hardhat 3 against a local Anvil, not yet on Sepolia. The chains are the same on Hardhat 2,
+were run on Hardhat 3 against a local Anvil and on Sepolia. The chains are the same on Hardhat 2,
 where `storage` is `hre.storageDecoder`; `npm run readback` is what exercises that adapter.
 
 The contract name, the compiler settings and the address must all belong to one build: solc 0.8.26,
@@ -282,12 +282,12 @@ From the repo root, on Node 22.13 or newer, or with `npx` available to fetch it:
 
 ```bash
 npm --prefix deployments/example run read:local      # run: a fresh local Anvil seed
-npm --prefix deployments/example run read            # not yet run: needs a Sepolia deployment
-npm --prefix deployments/example run read:published  # not yet run: needs a deployment and a publish
+npm --prefix deployments/example run read            # the sealed mocks on Sepolia
+npm --prefix deployments/example run read:published  # the same, with the package from npm
 ```
 
 `read:local` packs the package from the existing `dist/` and seeds its own Anvil, using Anvil's
-development account. Until a deployment exists, `read` exits 2 and says so.
+development account. `read` takes its addresses from the manifest.
 
 ## Decoder options
 
@@ -373,10 +373,9 @@ and `cancun`. Set it explicitly, as `deployments/hh2` and `deployments/hh3` do.
 
 ## Owner runbook
 
-This is for the owner, who holds the deployer key. None of it has been run with a real key or on
-Sepolia yet. The Sourcify submission in particular is **not proven until G2**: its scripts have only
-run against a fake server, and whether Sourcify accepts a Hardhat 3 build is unknown until then. A
-rejection blocks sealing.
+This is for the owner, who holds the deployer key. It was first used with a real key for the Sepolia
+deployment of 2026-11-02, where Sourcify accepted the Hardhat 3 build as an exact match for all 11
+contracts. A rejection blocks sealing.
 
 G1 to G6 are the release gates. Do each only when its turn comes, in this order.
 
@@ -631,8 +630,7 @@ gh run list --commit (git rev-parse HEAD)
 
 `independent-checks.yml` does not run on this push. It is set to run on pushes to `main` and on pull
 requests into `main`, and as far as is known GitHub only allows a manual start once the file is on `main`.
-So the first look at Geth and Reth should come from the pull request in G5. No workflow has run on GitHub
-yet, so check that it really starts.
+So the first look at Geth and Reth for a new commit comes from its pull request in G5.
 
 Reth publishes no Windows binary, so `clients all` cannot pass on this machine. The gate needs the CI
 evidence instead: a successful `independent-checks.yml` run for the exact commit, which it reads with

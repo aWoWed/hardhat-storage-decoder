@@ -425,6 +425,72 @@
               "nonce": 67,
               "txHash": "0xec0bb41a6c9a0568efbc1106f69087ffacca63083f624193b0149c27f5933514",
               "block": 12045178
+            },
+            {
+              "id": "seal:MockValueTypes",
+              "nonce": 68,
+              "txHash": "0xe9e4ac78f16fd976d2c5b2ebae86fcd82f7b8050ecb8b8439f018a43ccc32ad7",
+              "block": 12045523
+            },
+            {
+              "id": "seal:MockPacked",
+              "nonce": 69,
+              "txHash": "0xf2d7e0258b9f67d0c687f5870f22504c1d57e98060148951c7063ab7029ed67a",
+              "block": 12045524
+            },
+            {
+              "id": "seal:MockMappings",
+              "nonce": 70,
+              "txHash": "0x06375a3e53ea73519f65111ce7799721c79117ae85a5c09caa1a326e9cd56c45",
+              "block": 12045525
+            },
+            {
+              "id": "seal:MockArrays",
+              "nonce": 71,
+              "txHash": "0x9f8d95d0996a11adc8dd6d84218a84ea3676858fab444c63df759b3800f85e1c",
+              "block": 12045526
+            },
+            {
+              "id": "seal:MockEnums",
+              "nonce": 72,
+              "txHash": "0x5ada668af254529dd617af60c23b009d4b3dc6f5f8201d93c2ef2f09d3e6e4c7",
+              "block": 12045527
+            },
+            {
+              "id": "seal:MockStructs",
+              "nonce": 73,
+              "txHash": "0x776514ed365032b5ca7c0f42706ac61cf2ab5c1ef706d4223bfc26a6fcc045b3",
+              "block": 12045528
+            },
+            {
+              "id": "seal:MockStrings",
+              "nonce": 74,
+              "txHash": "0xf399daa8dc084e6140a39cb27cb587d75f3a36632212a475f27a65dff37e0243",
+              "block": 12045529
+            },
+            {
+              "id": "seal:MockUserTypes",
+              "nonce": 75,
+              "txHash": "0x2a8b7b3473b98c2487a677b61a35c58b3c87905ecbd30d4cb1a321dbac9dc841",
+              "block": 12045530
+            },
+            {
+              "id": "seal:MockInheritance",
+              "nonce": 76,
+              "txHash": "0x869a6f27ad71f831eeb60f41c0c1db51545d29879ec98243ea16916c56179103",
+              "block": 12045531
+            },
+            {
+              "id": "seal:MockShadowed",
+              "nonce": 77,
+              "txHash": "0x928e5df0ca1c6a2a5d2acc285606fd1a99d4ec5f6ff38dac29efc95ce6551f79",
+              "block": 12045532
+            },
+            {
+              "id": "seal:MockImmutable",
+              "nonce": 78,
+              "txHash": "0x7990e4f25b392040c414b4245bc43354a86f0d75bc66d855a6b3b3a3033512c3",
+              "block": 12045533
             }
           ],
           "contracts": {
@@ -432,8 +498,8 @@
               "address": "0xb40E72994fFC3c71450d55C27598c5a54edDA762",
               "deployBlock": 12045102,
               "txHash": "0x4254241d123f61ab5ca3950969c152e3e78b53e61ab4f097c075d0778123ba1a",
-              "sealBlock": null,
-              "sealTxHash": null,
+              "sealBlock": 12045523,
+              "sealTxHash": "0xe9e4ac78f16fd976d2c5b2ebae86fcd82f7b8050ecb8b8439f018a43ccc32ad7",
               "expected": {
                 "owner": {
                   "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
@@ -441,7 +507,7 @@
                   "requiresArchive": false
                 },
                 "isSealed": {
-                  "value": false,
+                  "value": true,
                   "blockTag": "latest",
                   "requiresArchive": false
                 },
@@ -532,8 +598,8 @@
               "address": "0xF9591D2c69c06E876cAd58bA774F73AC1b48254F",
               "deployBlock": 12045119,
               "txHash": "0x7f73769751b7b1dab0c7726c3d1d07b9c1ba920413cddebaccd95e5d802660d5",
-              "sealBlock": null,
-              "sealTxHash": null,
+              "sealBlock": 12045524,
+              "sealTxHash": "0xf2d7e0258b9f67d0c687f5870f22504c1d57e98060148951c7063ab7029ed67a",
               "expected": {
                 "owner": {
                   "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
@@ -541,7 +607,7 @@
                   "requiresArchive": false
                 },
                 "isSealed": {
-                  "value": false,
+                  "value": true,
                   "blockTag": "latest",
                   "requiresArchive": false
                 },
@@ -591,8 +657,8 @@
               "address": "0x08dC97e14FcD82137Eb9f47a282842d72f78b585",
               "deployBlock": 12045122,
               "txHash": "0xdf276f8005a5eb517e8856d0363a968bedba75d72d51fd06972e9898ad4b42ca",
-              "sealBlock": null,
-              "sealTxHash": null,
+              "sealBlock": 12045525,
+              "sealTxHash": "0x06375a3e53ea73519f65111ce7799721c79117ae85a5c09caa1a326e9cd56c45",
               "expected": {
                 "owner": {
                   "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
@@ -600,7 +666,7 @@
                   "requiresArchive": false
                 },
                 "isSealed": {
-                  "value": false,
+                  "value": true,
                   "blockTag": "latest",
                   "requiresArchive": false
                 },
@@ -660,8 +726,8 @@
               "address": "0x1Cd5b3C3bD27f912098e6aa7b872c010646B2297",
               "deployBlock": 12045133,
               "txHash": "0x17765f0e853e444b39819191a7f66141cb768b17e17fc06d70034e1dd4842c34",
-              "sealBlock": null,
-              "sealTxHash": null,
+              "sealBlock": 12045526,
+              "sealTxHash": "0x9f8d95d0996a11adc8dd6d84218a84ea3676858fab444c63df759b3800f85e1c",
               "expected": {
                 "owner": {
                   "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
@@ -669,7 +735,7 @@
                   "requiresArchive": false
                 },
                 "isSealed": {
-                  "value": false,
+                  "value": true,
                   "blockTag": "latest",
                   "requiresArchive": false
                 },
@@ -734,8 +800,8 @@
               "address": "0x7C4A0fBA09082F1062b4435426c5d1632a2fBE21",
               "deployBlock": 12045144,
               "txHash": "0x0b30eed5ed2d4e3cd8724ad89e783e55d782aeec8acac09cbc4045ca52ffa85f",
-              "sealBlock": null,
-              "sealTxHash": null,
+              "sealBlock": 12045527,
+              "sealTxHash": "0x5ada668af254529dd617af60c23b009d4b3dc6f5f8201d93c2ef2f09d3e6e4c7",
               "expected": {
                 "owner": {
                   "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
@@ -743,7 +809,7 @@
                   "requiresArchive": false
                 },
                 "isSealed": {
-                  "value": false,
+                  "value": true,
                   "blockTag": "latest",
                   "requiresArchive": false
                 },
@@ -773,8 +839,8 @@
               "address": "0xF445cFc79A62E826429B0B76F1C0C26aFfd95279",
               "deployBlock": 12045149,
               "txHash": "0x8074c1d7caf869d4d3adec66cd094762d8ce1708b3b9398ae42d071d0bbb9d80",
-              "sealBlock": null,
-              "sealTxHash": null,
+              "sealBlock": 12045528,
+              "sealTxHash": "0x776514ed365032b5ca7c0f42706ac61cf2ab5c1ef706d4223bfc26a6fcc045b3",
               "expected": {
                 "owner": {
                   "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
@@ -782,7 +848,7 @@
                   "requiresArchive": false
                 },
                 "isSealed": {
-                  "value": false,
+                  "value": true,
                   "blockTag": "latest",
                   "requiresArchive": false
                 },
@@ -857,8 +923,8 @@
               "address": "0xc8467490C4349556a0e3830a5A1505c7e0199cc6",
               "deployBlock": 12045157,
               "txHash": "0x20c6dd77ee76224139914d9887c35d31d96f3b4db7511d3bdc05d7991585a5b8",
-              "sealBlock": null,
-              "sealTxHash": null,
+              "sealBlock": 12045529,
+              "sealTxHash": "0xf399daa8dc084e6140a39cb27cb587d75f3a36632212a475f27a65dff37e0243",
               "expected": {
                 "owner": {
                   "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
@@ -866,7 +932,7 @@
                   "requiresArchive": false
                 },
                 "isSealed": {
-                  "value": false,
+                  "value": true,
                   "blockTag": "latest",
                   "requiresArchive": false
                 },
@@ -896,8 +962,8 @@
               "address": "0x8c3a7D0732cC7b2828Ce89A684301A1F95A1bafc",
               "deployBlock": 12045162,
               "txHash": "0x92f4f7f2aa61a37aaebf44d71663aa29dc9b3bc5276a5e061d2a626de611710e",
-              "sealBlock": null,
-              "sealTxHash": null,
+              "sealBlock": 12045530,
+              "sealTxHash": "0x2a8b7b3473b98c2487a677b61a35c58b3c87905ecbd30d4cb1a321dbac9dc841",
               "expected": {
                 "owner": {
                   "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
@@ -905,7 +971,7 @@
                   "requiresArchive": false
                 },
                 "isSealed": {
-                  "value": false,
+                  "value": true,
                   "blockTag": "latest",
                   "requiresArchive": false
                 },
@@ -945,8 +1011,8 @@
               "address": "0x9Df507873C62e9318684F492C0c3FE09Bb0BFCdA",
               "deployBlock": 12045167,
               "txHash": "0xb6ab14ee8b23f7f7a31f9c822228864b91d75a3d4c95e261ba892be23e718fca",
-              "sealBlock": null,
-              "sealTxHash": null,
+              "sealBlock": 12045531,
+              "sealTxHash": "0x869a6f27ad71f831eeb60f41c0c1db51545d29879ec98243ea16916c56179103",
               "expected": {
                 "owner": {
                   "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
@@ -954,7 +1020,7 @@
                   "requiresArchive": false
                 },
                 "isSealed": {
-                  "value": false,
+                  "value": true,
                   "blockTag": "latest",
                   "requiresArchive": false
                 },
@@ -979,8 +1045,8 @@
               "address": "0x0d1CcD84d0A7b128eb0C422879F2fD9BB7C3C070",
               "deployBlock": 12045171,
               "txHash": "0xf9871f2e623c9c13914067281f6b5e109955dccf8465752025280db1e65f628d",
-              "sealBlock": null,
-              "sealTxHash": null,
+              "sealBlock": 12045532,
+              "sealTxHash": "0x928e5df0ca1c6a2a5d2acc285606fd1a99d4ec5f6ff38dac29efc95ce6551f79",
               "expected": {
                 "owner": {
                   "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
@@ -988,7 +1054,7 @@
                   "requiresArchive": false
                 },
                 "isSealed": {
-                  "value": false,
+                  "value": true,
                   "blockTag": "latest",
                   "requiresArchive": false
                 },
@@ -1023,8 +1089,8 @@
               "address": "0x77EbEd8Af6EC5d0DB10Bf8EaBc69773296c03962",
               "deployBlock": 12045177,
               "txHash": "0xbfde6b5375c0471f7f04ebd911c82f8a0fa03369ef3cfd3ac3c2983547b69732",
-              "sealBlock": null,
-              "sealTxHash": null,
+              "sealBlock": 12045533,
+              "sealTxHash": "0x7990e4f25b392040c414b4245bc43354a86f0d75bc66d855a6b3b3a3033512c3",
               "expected": {
                 "owner": {
                   "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
@@ -1032,7 +1098,7 @@
                   "requiresArchive": false
                 },
                 "isSealed": {
-                  "value": false,
+                  "value": true,
                   "blockTag": "latest",
                   "requiresArchive": false
                 },

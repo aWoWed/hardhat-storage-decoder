@@ -9,25 +9,25 @@ results stated in section 0 are newer.
 
 ## 0. Release status for 1.0.0
 
-Not released. `npm run release:gate` has not been run for real, so AC 28 is not met.
+Not released. `npm run release:gate` has not passed, so AC 28 is not met.
 
-Still outstanding, none of it done:
+Done on 2026-11-02:
 
-- **Sepolia: not yet deployed.** The manifest has no Sepolia entry, so there are no addresses,
-  nothing is sealed, and no Sepolia read-back has run. The mocks have only been deployed to a
-  local node.
-- **A `readMany` of 300 through a public Sepolia RPC (AC 27) has not run**, because there is nothing
-  deployed to read. So the default concurrency of 16 is unproven against a public endpoint.
-- **Sourcify verification (AC 7) has not happened.** Nothing is deployed to verify. The tooling
-  exists: `node scripts/check-sourcify.mjs --chain 11155111`, which the gate runs.
-- **Geth and Reth have not run.** Neither is installed here, and `gh` is not on the `PATH`. Docker
-  would not help: `scripts/clients/run-client.mjs` takes `GETH_BIN` or a checksummed `.tools/geth.exe`,
-  and `RETH_BIN`, and has no Docker path. Reth publishes no Windows binary, so on this machine AC 19
-  rests on a successful `independent-checks.yml` run for the exact commit, or on `clients all`
-  elsewhere with both binaries.
+- **Sepolia: deployed and sealed.** The addresses are in `docs/public-testnet.md`. After sealing, the
+  read-back passed 100 of 100 entries on both adapters. Before sealing, it also passed all 6 past-block
+  entries.
+- **A `readMany` of 300 through a public Sepolia RPC (AC 27) succeeded** on both adapters, before and
+  after sealing, at the default concurrency. The gate runs it again.
+- **Sourcify verification (AC 7): 11 of 11 exact matches.** The gate runs
+  `node scripts/check-sourcify.mjs --chain 11155111` again.
+
+Still outstanding:
+
+- **Geth and Reth evidence for the merged commit (AC 19).** `independent-checks.yml` passed on the pull
+  request, which the gate does not count. It needs a successful run from the push to `main`.
 - **The mainnet check at gate G5 has not run.** The owner runs it with their own archive URL. No
   report exists, and without one AC 22 stays unmet.
-- **Nothing has been pushed or merged**, so no workflow has run on GitHub (AC 11).
+- **Nothing has been merged to `main`** (AC 11).
 - **The version bump (Step 13b) has not happened.** `package.json` reads 0.2.0 and
   `package-lock.json` reads 0.1.0. AC 29 needs both at 1.0.0.
 - **`npm publish` has not happened** (section 1).
@@ -43,9 +43,10 @@ Geth or Reth evidence. Evidence from another commit is rejected. It requires the
 succeeded, not just read-back exit 0, because a rejected burst leaves the read-back's exit code at 0.
 It passes with the bump outstanding, since the bump follows it; `node
 scripts/check-release-consistency.mjs 1.0.0` then holds the bumped commit to both version files.
-`npm run release:gate -- --preflight` lists what is outstanding without running anything long. The
-gate's rules are tested with fakes in `test/unit/releaseGate.test.ts`; it has not run against the
-real commands, and it has not passed.
+`node scripts/release-gate.mjs --preflight` lists what is outstanding without running anything long. The
+gate's rules are tested with fakes in `test/unit/releaseGate.test.ts`. Its real commands ran before
+sealing, where the first 24 steps passed and it stopped at the Geth and Reth evidence, as expected.
+It has not passed.
 
 Also judged by the gate: only the newest `independent-checks.yml` run for the commit counts; a mainnet
 report needs at least one non-zero value per contract; only `package.json` at 0.2.0, and

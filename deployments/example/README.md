@@ -8,8 +8,8 @@ From the repo root:
 | Command | Reads | Package | Status |
 |---|---|---|---|
 | `npm --prefix deployments/example run read:local` | A fresh Anvil seeded by this run. Needs `anvil` | Packed from the existing `dist/` | Run on 2026-10-31 |
-| `npm --prefix deployments/example run read` | Sepolia, from `deployments/manifest/deployments.json` | Packed from the existing `dist/` | Not yet run against a deployment: none exists. It exits 2 and says so |
-| `npm --prefix deployments/example run read:published` | Sepolia, as above | The npm registry | Not yet run: not published, and no deployment exists |
+| `npm --prefix deployments/example run read` | Sepolia, from `deployments/manifest/deployments.json` | Packed from the existing `dist/` | Run on 2026-11-02 |
+| `npm --prefix deployments/example run read:published` | Sepolia, as above | The npm registry | Needs the package on npm |
 
 `read:local` proves the page's reads work on a local node. It says nothing about Sepolia.
 
