@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { defineConfig, type Options } from 'tsup';
 
 /**
@@ -16,7 +16,8 @@ import { defineConfig, type Options } from 'tsup';
 const shared: Options = {
   format: ['cjs', 'esm'],
   dts: true,
-  sourcemap: true,
+  // No source maps: they embed the whole TypeScript source and were most of the package's size.
+  sourcemap: false,
   clean: false,
   splitting: false,
   treeshake: true,
@@ -70,8 +71,6 @@ function writeHardhat2EsmWrapper(): void {
     '',
   ];
   writeFileSync(`${outDir}/index.mjs`, lines.join('\n'));
-  // The map tsup wrote describes the bundle that was just replaced.
-  rmSync(`${outDir}/index.mjs.map`, { force: true });
 }
 
 const configs: Options[] = [
