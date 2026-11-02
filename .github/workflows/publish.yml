@@ -45,6 +45,9 @@ jobs:
             exit 1
           fi
       - run: npm ci --no-audit --no-fund
+      # verify:package loads ./hardhat2 next to the Hardhat 2 in this fixture, whose node_modules are not
+      # committed. Its dependencies' install scripts are not needed for that and do not run in this job.
+      - run: npm ci --ignore-scripts --no-audit --no-fund --prefix test/fixtures/hh2-project
       - run: npm run test:unit
       - run: npm run verify:package
       - run: npm publish

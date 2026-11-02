@@ -30,10 +30,22 @@ const isAlive = (pid: number) => {
   }
 };
 
+/**
+ * Ends the one process a test left running. Not `killProcessTree`: on POSIX that ends a process
+ * group, and a grandchild does not lead one, so it would report success and leave it running.
+ */
+const end = (pid: number) => {
+  try {
+    process.kill(pid, 'SIGKILL');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error;
+  }
+};
+
 const started: number[] = [];
 afterEach(async () => {
   for (const pid of started.splice(0)) {
-    expect(killProcessTree(pid)).toBe(true);
+    end(pid);
     await vi.waitFor(() => expect(isAlive(pid)).toBe(false), { timeout: 10_000 });
   }
 });

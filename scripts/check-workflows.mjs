@@ -339,6 +339,12 @@ function checkPublish(workflow, report) {
       report('publish-steps', `${PUBLISH} must check ${label} before it publishes`);
     }
   }
+  // verify:package loads ./hardhat2 next to the fixture's Hardhat 2, which a fresh checkout lacks.
+  const fixture = first(/^\s*npm ci --ignore-scripts --no-audit --no-fund --prefix test\/fixtures\/hh2-project\s*$/m);
+  const verify = first(/^\s*npm run verify:package\s*$/m);
+  if (fixture === -1 || (verify !== -1 && fixture > verify)) {
+    report('publish-steps', `${PUBLISH} must install test/fixtures/hh2-project, without its scripts, before verify:package`);
+  }
   // The parsed workflow, so that the comments may explain provenance.
   if (/provenance|_authToken|NODE_AUTH_TOKEN|NPM_TOKEN|NPM_CONFIG/i.test(JSON.stringify(workflow))) {
     report('publish-token', `${PUBLISH} must publish through trusted publishing alone, which also adds provenance`);
@@ -502,6 +508,9 @@ const BAD_COPIES = [
   ['publish with npm too old', PUBLISH, 'publish-npm', 'NPM_VERSION: 11.19.1', 'NPM_VERSION: 10.9.2'],
   ['publish with npm floating', PUBLISH, 'publish-npm', 'NPM_VERSION: 11.19.1', 'NPM_VERSION: latest'],
   ['publish on Node 22', PUBLISH, 'node-pin', 'node-version: 24.22.2', 'node-version: 22.14.0'],
+  ['publish without the Hardhat 2 fixture', PUBLISH, 'publish-steps', '      - run: npm ci --ignore-scripts --no-audit --no-fund --prefix test/fixtures/hh2-project\n', ''],
+  ['publish running the fixture install scripts', PUBLISH, 'publish-steps', 'npm ci --ignore-scripts --no-audit --no-fund --prefix', 'npm ci --no-audit --no-fund --prefix'],
+  ['publish installing the fixture after the package checks', PUBLISH, 'publish-steps', '      - run: npm ci --ignore-scripts --no-audit --no-fund --prefix test/fixtures/hh2-project\n      - run: npm run test:unit\n      - run: npm run verify:package\n', '      - run: npm run test:unit\n      - run: npm run verify:package\n      - run: npm ci --ignore-scripts --no-audit --no-fund --prefix test/fixtures/hh2-project\n'],
 ];
 
 function selfTest() {
