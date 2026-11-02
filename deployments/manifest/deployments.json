@@ -1,4 +1,1051 @@
 {
   "schemaVersion": 1,
-  "chains": {}
+  "chains": {
+    "11155111": {
+      "generations": [
+        {
+          "deployer": "0xDF456DA75124174FC9A1575C793A679650b4548D",
+          "repoCommit": "e94f8b5f3dd4bdbed9bd388e3dfb9d00ba420de8",
+          "sourceHash": "8eaf069c12898bca26daad80854f3ce68e929c7143eabf437b1b8e317c63df22886df773cb693c891b2196160412d866a3e4eb2d18b184b075cae08f0d5fe2a2",
+          "solcSettings": {
+            "version": "0.8.26",
+            "optimizer": {
+              "enabled": false
+            },
+            "evmVersion": "cancun"
+          },
+          "steps": [
+            {
+              "id": "deploy:MockValueTypes",
+              "nonce": 0,
+              "txHash": "0x4254241d123f61ab5ca3950969c152e3e78b53e61ab4f097c075d0778123ba1a",
+              "block": 12045102
+            },
+            {
+              "id": "MockValueTypes:setRevision:0",
+              "nonce": 1,
+              "txHash": "0x886071888086c650078872c23fbf955299ba5b871e3561c8ae248c1ba11c2bcf",
+              "block": 12045103,
+              "blockHash": "0x7170bf3a66a6a8697a25ba5b2784b5017d042cb46c59c8a2f78d76c7d642eedd"
+            },
+            {
+              "id": "MockValueTypes:setRevision:1",
+              "nonce": 2,
+              "txHash": "0xb360924c97a6fd11f616ed1b01486003d3480becca2a0b4e44b9bedcfbc49072",
+              "block": 12045107,
+              "blockHash": "0x3dfdff3a0a1df93b7f30c7b91b578e1646aceadc02563708543abfd10b14579c"
+            },
+            {
+              "id": "MockValueTypes:setRevision:2",
+              "nonce": 3,
+              "txHash": "0x92015a26f893624afa510b322880dc2adfb9490b578e4cb4b93287107c14bcf8",
+              "block": 12045111,
+              "blockHash": "0x464012e07bab5fa5efbc5524c8cca0f484c1c167185c13161af12f4f7ba8f0f1"
+            },
+            {
+              "id": "MockValueTypes:setNumbers:3",
+              "nonce": 4,
+              "txHash": "0x2aa1fc7db5527b94988a54cb4c6a54c28cf1b17de934ece503d20f3d4334e728",
+              "block": 12045115
+            },
+            {
+              "id": "MockValueTypes:setReferences:4",
+              "nonce": 5,
+              "txHash": "0xf36fe6df33a12d1cc6d32456ee2ffba18c2b7d8c721202a60c9fecfdd1f659ae",
+              "block": 12045116
+            },
+            {
+              "id": "MockValueTypes:setCallback:5",
+              "nonce": 6,
+              "txHash": "0x668f70e7c694cebe82edbc6c3312436f27037dec7318127a1fcc96bfbaf4746b",
+              "block": 12045117
+            },
+            {
+              "id": "MockValueTypes:setOp:6",
+              "nonce": 7,
+              "txHash": "0xea5fde26bc8d1a6d95dd17e82f82450c01ec460806192d1cf81fe4893e52dfa0",
+              "block": 12045118
+            },
+            {
+              "id": "deploy:MockPacked",
+              "nonce": 8,
+              "txHash": "0x7f73769751b7b1dab0c7726c3d1d07b9c1ba920413cddebaccd95e5d802660d5",
+              "block": 12045119
+            },
+            {
+              "id": "MockPacked:setFirstSlot:0",
+              "nonce": 9,
+              "txHash": "0xb8e77a48f1e61eee96a3725a49663d807943089d08adad0567bfef07acb84f83",
+              "block": 12045120
+            },
+            {
+              "id": "MockPacked:setSecondSlot:1",
+              "nonce": 10,
+              "txHash": "0x8d54d169a11fe3b3749455b14a2bd2301eb661e04888c75f964f3c675ca62e6a",
+              "block": 12045121
+            },
+            {
+              "id": "deploy:MockMappings",
+              "nonce": 11,
+              "txHash": "0xdf276f8005a5eb517e8856d0363a968bedba75d72d51fd06972e9898ad4b42ca",
+              "block": 12045122
+            },
+            {
+              "id": "MockMappings:setByAddress:0",
+              "nonce": 12,
+              "txHash": "0x80d0c41fba691b39123708d8441214e8cd50072d1f6b103c0651f1be8a24a0d8",
+              "block": 12045123
+            },
+            {
+              "id": "MockMappings:setByUint:1",
+              "nonce": 13,
+              "txHash": "0x32e619b1fa9b09690b8f1eee9fe5e9df25bf15f4b7b1ab318a360fe43fa5cf25",
+              "block": 12045124
+            },
+            {
+              "id": "MockMappings:setByInt:2",
+              "nonce": 14,
+              "txHash": "0x00ab136a58f7685fa88182f2332dd33d39df84d3b9582e6aaab59a2068d17a4d",
+              "block": 12045125
+            },
+            {
+              "id": "MockMappings:setByBytes32:3",
+              "nonce": 15,
+              "txHash": "0x29d1b6d86d539e6b35392150da2502c4dd80e4e9a2a7ec12f4cec02385efcb19",
+              "block": 12045126
+            },
+            {
+              "id": "MockMappings:setByString:4",
+              "nonce": 16,
+              "txHash": "0x667503af3d8e3dd732c4bbc219301831cc5b5204b331fd54ebe3aa7d4efd79d8",
+              "block": 12045127
+            },
+            {
+              "id": "MockMappings:setByBytes:5",
+              "nonce": 17,
+              "txHash": "0xa80af4524b222115eb9c3e1cfc8b75eb97096333c8a3e20471789041412b1cb6",
+              "block": 12045128
+            },
+            {
+              "id": "MockMappings:setNested:6",
+              "nonce": 18,
+              "txHash": "0xceb3de04dc44c6814dc2d158e4febf07e52e71ea740c46dc6a2fe817701432bb",
+              "block": 12045129
+            },
+            {
+              "id": "MockMappings:setDeep:7",
+              "nonce": 19,
+              "txHash": "0xffc64ff2f33a12a04b63a15cd4ec9820046d8265bed31b7cd894c83103f6a92d",
+              "block": 12045130
+            },
+            {
+              "id": "MockMappings:pushToList:8",
+              "nonce": 20,
+              "txHash": "0x4e8b000a75d74d53d71f629aa488fb1a092e5471c9e7379f220c56859ec53f03",
+              "block": 12045131
+            },
+            {
+              "id": "MockMappings:pushToList:9",
+              "nonce": 21,
+              "txHash": "0x2ad9c8a6d9c7fb144fe82b1b112074a49ddbcf978620b1b2f849e6f80c594319",
+              "block": 12045132
+            },
+            {
+              "id": "deploy:MockArrays",
+              "nonce": 22,
+              "txHash": "0x17765f0e853e444b39819191a7f66141cb768b17e17fc06d70034e1dd4842c34",
+              "block": 12045133
+            },
+            {
+              "id": "MockArrays:pushNumber:0",
+              "nonce": 23,
+              "txHash": "0x26cc62bde89b6aa5e63b6bf17b1475faa819b5a8dd62ef68b8bf54035fc9619e",
+              "block": 12045134
+            },
+            {
+              "id": "MockArrays:pushNumber:1",
+              "nonce": 24,
+              "txHash": "0xaaa3965b1a7cced61c3fdd9011ffd71a904f782f2e7fb24c87b5ad1396e8344f",
+              "block": 12045135
+            },
+            {
+              "id": "MockArrays:pushSmallNumber:2",
+              "nonce": 25,
+              "txHash": "0x0d5802de2e9f1d5f367c7133306ab209196d09bc51202634fc685663933f96e7",
+              "block": 12045136
+            },
+            {
+              "id": "MockArrays:pushSmallNumber:3",
+              "nonce": 26,
+              "txHash": "0x3e18db07030b0891c1542b27cd29342ad2dffbb636473e583c1e2c9b5563968a",
+              "block": 12045137
+            },
+            {
+              "id": "MockArrays:pushAccount:4",
+              "nonce": 27,
+              "txHash": "0x35c4ef81d05153649c007c4f70b261121d7daad6b89b2eb5e39bbaab6927bbb2",
+              "block": 12045138
+            },
+            {
+              "id": "MockArrays:setFixedNumber:5",
+              "nonce": 28,
+              "txHash": "0x61f82c25194c77841ff7b4ad5fdf414628ef3d158f039582655e719a039f4bc9",
+              "block": 12045139
+            },
+            {
+              "id": "MockArrays:setFixedSmall:6",
+              "nonce": 29,
+              "txHash": "0xfff97023be8f1172c5aae00d10666b2f772bc4e0391cec6a1c668fcad530677b",
+              "block": 12045140
+            },
+            {
+              "id": "MockArrays:setMatrix:7",
+              "nonce": 30,
+              "txHash": "0x060d812c1459cd9a20cab7baf5a76d0519427d7a19cf19cd3ea6153d92da1f9c",
+              "block": 12045141
+            },
+            {
+              "id": "MockArrays:pushRow:8",
+              "nonce": 31,
+              "txHash": "0xe1e8927a1393f0629b1f8ea5b7fc9cfe31a0c313edc910ba32e20ae948f0dc9b",
+              "block": 12045142
+            },
+            {
+              "id": "MockArrays:pushRow:9",
+              "nonce": 32,
+              "txHash": "0xce5c7db11281f2976442538c26c20394e90042e5e4b2cb474eb5549b8eccb202",
+              "block": 12045143
+            },
+            {
+              "id": "deploy:MockEnums",
+              "nonce": 33,
+              "txHash": "0x0b30eed5ed2d4e3cd8724ad89e783e55d782aeec8acac09cbc4045ca52ffa85f",
+              "block": 12045144
+            },
+            {
+              "id": "MockEnums:setStatus:0",
+              "nonce": 34,
+              "txHash": "0xd86230e3556727891373cb2fc3ea579b2a403917bed35f267e41f7c815f15902",
+              "block": 12045145
+            },
+            {
+              "id": "MockEnums:setCountByStatus:1",
+              "nonce": 35,
+              "txHash": "0xe57316748f6048c1dd21e9c8fb2077c41b8f69b58600540ac63cc1ec47bcac6f",
+              "block": 12045146
+            },
+            {
+              "id": "MockEnums:pushHistory:2",
+              "nonce": 36,
+              "txHash": "0x5c8dddd0c390e508d0cc05d5e4a7fd802eb5eb7c93346fb18ea6a9ed33c47906",
+              "block": 12045147
+            },
+            {
+              "id": "MockEnums:pushHistory:3",
+              "nonce": 37,
+              "txHash": "0x70deead7e6b5ee32533240f969e9017790c46dfe9d3865bf6805b8b21421bcd8",
+              "block": 12045148
+            },
+            {
+              "id": "deploy:MockStructs",
+              "nonce": 38,
+              "txHash": "0x8074c1d7caf869d4d3adec66cd094762d8ce1708b3b9398ae42d071d0bbb9d80",
+              "block": 12045149
+            },
+            {
+              "id": "MockStructs:setPosition:0",
+              "nonce": 39,
+              "txHash": "0xaff8705e776aecbde059b34101c7e83b3b8c3a258771ce81476d49aa0073b24c",
+              "block": 12045150
+            },
+            {
+              "id": "MockStructs:setPositionLabel:1",
+              "nonce": 40,
+              "txHash": "0x6154ddf841d4024ca15ede780773ca22dd2d6607fe46fec584b9f40b2067696d",
+              "block": 12045151
+            },
+            {
+              "id": "MockStructs:pushPositionHistory:2",
+              "nonce": 41,
+              "txHash": "0xc8929fc22714afbcd53209ef7fc6ba498282742890c7c607eaaa6d034bd2b99e",
+              "block": 12045152
+            },
+            {
+              "id": "MockStructs:setPositionsEntry:3",
+              "nonce": 42,
+              "txHash": "0x1c936f1d78be87eb4482d1005c08509e4d590908131ef69a5185cfe9e394828b",
+              "block": 12045153
+            },
+            {
+              "id": "MockStructs:pushPoint:4",
+              "nonce": 43,
+              "txHash": "0xc9e7187539bb1e4601ac7e7924c39e1e249570f62760c08ab6352328b7b615ed",
+              "block": 12045154
+            },
+            {
+              "id": "MockStructs:setRootValue:5",
+              "nonce": 44,
+              "txHash": "0xba6d259694ea543fdff949cc2d4caae74f2d294e7062b8d385df36098ad04a68",
+              "block": 12045155
+            },
+            {
+              "id": "MockStructs:setGrandchildValue:6",
+              "nonce": 45,
+              "txHash": "0xf0004d4297e52abfa26f93888d14191959421a9aafd013a0a2cb677843c14f5b",
+              "block": 12045156
+            },
+            {
+              "id": "deploy:MockStrings",
+              "nonce": 46,
+              "txHash": "0x20c6dd77ee76224139914d9887c35d31d96f3b4db7511d3bdc05d7991585a5b8",
+              "block": 12045157
+            },
+            {
+              "id": "MockStrings:setShortText:0",
+              "nonce": 47,
+              "txHash": "0x86b423c2f8e1dd9efe438c88b10885fd582c0845044c3ceb91b1051ece3f39d6",
+              "block": 12045158
+            },
+            {
+              "id": "MockStrings:setLongText:1",
+              "nonce": 48,
+              "txHash": "0xb6566b316218beaab2a6b135c23d791499ef7d8a4e4c993eea1e77bb20215500",
+              "block": 12045159
+            },
+            {
+              "id": "MockStrings:setShortBlob:2",
+              "nonce": 49,
+              "txHash": "0xa286a4e392541e9eca9c2eefe32bf4cbf32d173d881c32ccf7fbf981b50ebcc3",
+              "block": 12045160
+            },
+            {
+              "id": "MockStrings:setLongBlob:3",
+              "nonce": 50,
+              "txHash": "0x3c61275ee138111db934ebc36e3da0b904482455597e37b1c0657c15f37a5f0b",
+              "block": 12045161
+            },
+            {
+              "id": "deploy:MockUserTypes",
+              "nonce": 51,
+              "txHash": "0x92f4f7f2aa61a37aaebf44d71663aa29dc9b3bc5276a5e061d2a626de611710e",
+              "block": 12045162
+            },
+            {
+              "id": "MockUserTypes:setValues:0",
+              "nonce": 52,
+              "txHash": "0x364b343c264db5c5b3ac19767b62a86f2690df50556c20bbe0ebe69ee10155bc",
+              "block": 12045163
+            },
+            {
+              "id": "MockUserTypes:setById:1",
+              "nonce": 53,
+              "txHash": "0x9764d2b2cf04ebe96047e4bc42a5e752782a183fca876aab05b7181e34c85a3d",
+              "block": 12045164
+            },
+            {
+              "id": "MockUserTypes:setBySigned:2",
+              "nonce": 54,
+              "txHash": "0xbf26b568f3448680b246863ead9a2d16a0b684974c51ab6a4ef6df88489cd5c8",
+              "block": 12045165
+            },
+            {
+              "id": "MockUserTypes:setByAmount:3",
+              "nonce": 55,
+              "txHash": "0xb51d13164376701dc09e8d748c61d33280c9f768f85b85f580f3e9e34b26ceef",
+              "block": 12045166
+            },
+            {
+              "id": "deploy:MockInheritance",
+              "nonce": 56,
+              "txHash": "0xb6ab14ee8b23f7f7a31f9c822228864b91d75a3d4c95e261ba892be23e718fca",
+              "block": 12045167
+            },
+            {
+              "id": "MockInheritance:setRootValue:0",
+              "nonce": 57,
+              "txHash": "0x7ff34bb66c6e21445280f6d5b23a17a051906119434c029f2b4fb66ab9768165",
+              "block": 12045168
+            },
+            {
+              "id": "MockInheritance:setMiddleBalance:1",
+              "nonce": 58,
+              "txHash": "0xd1ab52ef3f042eecfb4c932dcd290098ee5ade252916d37013c0197073b97cd1",
+              "block": 12045169
+            },
+            {
+              "id": "MockInheritance:setOwnLabel:2",
+              "nonce": 59,
+              "txHash": "0x3678082ef708662b5a4e38260094bd70853746eaffa4354f28e7d5c4ad612ce4",
+              "block": 12045170
+            },
+            {
+              "id": "deploy:MockShadowed",
+              "nonce": 60,
+              "txHash": "0xf9871f2e623c9c13914067281f6b5e109955dccf8465752025280db1e65f628d",
+              "block": 12045171
+            },
+            {
+              "id": "MockShadowed:setBaseShared:0",
+              "nonce": 61,
+              "txHash": "0xa1b03ce749d636ec0e7e53b31b1e871d4b14889c1aceabb6e359af85c5a3dbf4",
+              "block": 12045172
+            },
+            {
+              "id": "MockShadowed:setBetween:1",
+              "nonce": 62,
+              "txHash": "0x1401b07b41c32f540737930f81792faf8f20108daaf39e4edb5aba4f0cc8c0ed",
+              "block": 12045173
+            },
+            {
+              "id": "MockShadowed:setBaseTable:2",
+              "nonce": 63,
+              "txHash": "0x22c68dfd288e942544739679dc6a8f0d88e1b528c938c4017eac4fdc66a4d64a",
+              "block": 12045174
+            },
+            {
+              "id": "MockShadowed:setDerivedShared:3",
+              "nonce": 64,
+              "txHash": "0x10099baf92fe0b39c9f34ede089bf224459deb370bad1c5fbb544a5e587d28b4",
+              "block": 12045175
+            },
+            {
+              "id": "MockShadowed:setDerivedTable:4",
+              "nonce": 65,
+              "txHash": "0x6a1483127341abdb0ea517fc04a1711a8eb2e06a40fdf4eace9145a1812b6f24",
+              "block": 12045176
+            },
+            {
+              "id": "deploy:MockImmutable",
+              "nonce": 66,
+              "txHash": "0xbfde6b5375c0471f7f04ebd911c82f8a0fa03369ef3cfd3ac3c2983547b69732",
+              "block": 12045177
+            },
+            {
+              "id": "MockImmutable:setStored:0",
+              "nonce": 67,
+              "txHash": "0xec0bb41a6c9a0568efbc1106f69087ffacca63083f624193b0149c27f5933514",
+              "block": 12045178
+            }
+          ],
+          "contracts": {
+            "MockValueTypes": {
+              "address": "0xb40E72994fFC3c71450d55C27598c5a54edDA762",
+              "deployBlock": 12045102,
+              "txHash": "0x4254241d123f61ab5ca3950969c152e3e78b53e61ab4f097c075d0778123ba1a",
+              "sealBlock": null,
+              "sealTxHash": null,
+              "expected": {
+                "owner": {
+                  "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "isSealed": {
+                  "value": false,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "revision": {
+                  "value": "33",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "revision@12045103": {
+                  "value": "11",
+                  "blockTag": 12045103,
+                  "requiresArchive": true,
+                  "observed": {
+                    "value": "11",
+                    "block": 12045103,
+                    "endpointLabel": "hardhat-network:sepolia"
+                  }
+                },
+                "revision@12045107": {
+                  "value": "22",
+                  "blockTag": 12045107,
+                  "requiresArchive": true,
+                  "observed": {
+                    "value": "22",
+                    "block": 12045107,
+                    "endpointLabel": "hardhat-network:sepolia"
+                  }
+                },
+                "revision@12045111": {
+                  "value": "33",
+                  "blockTag": 12045111,
+                  "requiresArchive": true,
+                  "observed": {
+                    "value": "33",
+                    "block": 12045111,
+                    "endpointLabel": "hardhat-network:sepolia"
+                  }
+                },
+                "unsignedValue": {
+                  "value": "1606938044258990275541962092341162602522202993782792835301377",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "signedValue": {
+                  "value": "-42",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "flag": {
+                  "value": true,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "account": {
+                  "value": "0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "digest": {
+                  "value": "0x1111111111111111111111111111111111111111111111111111111111111111",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "selectorValue": {
+                  "value": "0xdeadbeef",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "token": {
+                  "value": "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "callback": {
+                  "value": "0xb40e72994ffc3c71450d55c27598c5a54edda7623fb27b85",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "op": {
+                  "value": "0x0000000000000a14",
+                  "blockTag": "latest",
+                  "requiresArchive": false,
+                  "buildDependent": true
+                }
+              }
+            },
+            "MockPacked": {
+              "address": "0xF9591D2c69c06E876cAd58bA774F73AC1b48254F",
+              "deployBlock": 12045119,
+              "txHash": "0x7f73769751b7b1dab0c7726c3d1d07b9c1ba920413cddebaccd95e5d802660d5",
+              "sealBlock": null,
+              "sealTxHash": null,
+              "expected": {
+                "owner": {
+                  "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "isSealed": {
+                  "value": false,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "small": {
+                  "value": "200",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "medium": {
+                  "value": "60000",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "signedSmall": {
+                  "value": "-7",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "enabled": {
+                  "value": true,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "holder": {
+                  "value": "0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "wide": {
+                  "value": "1267650600228229401496703205379",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "tailA": {
+                  "value": "1152921504606846981",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "tailB": {
+                  "value": "0x0102030405060708",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                }
+              }
+            },
+            "MockMappings": {
+              "address": "0x08dC97e14FcD82137Eb9f47a282842d72f78b585",
+              "deployBlock": 12045122,
+              "txHash": "0xdf276f8005a5eb517e8856d0363a968bedba75d72d51fd06972e9898ad4b42ca",
+              "sealBlock": null,
+              "sealTxHash": null,
+              "expected": {
+                "owner": {
+                  "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "isSealed": {
+                  "value": false,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "byAddress{s:0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa}": {
+                  "value": "1",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "byUint{n:7}": {
+                  "value": "2",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "byInt{n:-5}": {
+                  "value": "3",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "byBytes32{w:0x2222222222222222222222222222222222222222222222222222222222222222}": {
+                  "value": "4",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "byString{s:alpha}": {
+                  "value": "5",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "byBytes{s:0xbeef}": {
+                  "value": "6",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "nested{s:0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa}{n:9}": {
+                  "value": "7",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "deep{s:0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB}{s:mid}{n:3}": {
+                  "value": true,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "lists{n:4}[0]": {
+                  "value": "8",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "lists{n:4}[1]": {
+                  "value": "9",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                }
+              }
+            },
+            "MockArrays": {
+              "address": "0x1Cd5b3C3bD27f912098e6aa7b872c010646B2297",
+              "deployBlock": 12045133,
+              "txHash": "0x17765f0e853e444b39819191a7f66141cb768b17e17fc06d70034e1dd4842c34",
+              "sealBlock": null,
+              "sealTxHash": null,
+              "expected": {
+                "owner": {
+                  "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "isSealed": {
+                  "value": false,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "numbers[0]": {
+                  "value": "101",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "numbers[1]": {
+                  "value": "102",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "smallNumbers[0]": {
+                  "value": "1",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "smallNumbers[1]": {
+                  "value": "2",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "accounts[0]": {
+                  "value": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "fixedNumbers[1]": {
+                  "value": "103",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "fixedSmall[2]": {
+                  "value": "104",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "matrix[1][1]": {
+                  "value": "105",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "rows[0][0]": {
+                  "value": "106",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "rows[0][1]": {
+                  "value": "107",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "rows[1][0]": {
+                  "value": "108",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                }
+              }
+            },
+            "MockEnums": {
+              "address": "0x7C4A0fBA09082F1062b4435426c5d1632a2fBE21",
+              "deployBlock": 12045144,
+              "txHash": "0x0b30eed5ed2d4e3cd8724ad89e783e55d782aeec8acac09cbc4045ca52ffa85f",
+              "sealBlock": null,
+              "sealTxHash": null,
+              "expected": {
+                "owner": {
+                  "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "isSealed": {
+                  "value": false,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "status": {
+                  "value": "2",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "countByStatus{n:1}": {
+                  "value": "5",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "history[0]": {
+                  "value": "1",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "history[1]": {
+                  "value": "2",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                }
+              }
+            },
+            "MockStructs": {
+              "address": "0xF445cFc79A62E826429B0B76F1C0C26aFfd95279",
+              "deployBlock": 12045149,
+              "txHash": "0x8074c1d7caf869d4d3adec66cd094762d8ce1708b3b9398ae42d071d0bbb9d80",
+              "sealBlock": null,
+              "sealTxHash": null,
+              "expected": {
+                "owner": {
+                  "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "isSealed": {
+                  "value": false,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "position.id": {
+                  "value": "21",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "position.holder": {
+                  "value": "0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "position.active": {
+                  "value": true,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "position.point.x": {
+                  "value": "22",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "position.point.y": {
+                  "value": "-23",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "position.label": {
+                  "value": "position label",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "position.history[0]": {
+                  "value": "24",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "positions{s:0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB}.id": {
+                  "value": "25",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "positions{s:0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB}.label": {
+                  "value": "entry label",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "points[0].x": {
+                  "value": "26",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "points[0].y": {
+                  "value": "-27",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "root.value": {
+                  "value": "28",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "root.children{n:1}.children{n:2}.value": {
+                  "value": "29",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                }
+              }
+            },
+            "MockStrings": {
+              "address": "0xc8467490C4349556a0e3830a5A1505c7e0199cc6",
+              "deployBlock": 12045157,
+              "txHash": "0x20c6dd77ee76224139914d9887c35d31d96f3b4db7511d3bdc05d7991585a5b8",
+              "sealBlock": null,
+              "sealTxHash": null,
+              "expected": {
+                "owner": {
+                  "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "isSealed": {
+                  "value": false,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "shortText": {
+                  "value": "sssssssssssssssssssssssssssssss",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "longText": {
+                  "value": "llllllllllllllllllllllllllllllll",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "shortBlob": {
+                  "value": "0xababababababababababababababababababababababababababababababab",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "longBlob": {
+                  "value": "0xcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                }
+              }
+            },
+            "MockUserTypes": {
+              "address": "0x8c3a7D0732cC7b2828Ce89A684301A1F95A1bafc",
+              "deployBlock": 12045162,
+              "txHash": "0x92f4f7f2aa61a37aaebf44d71663aa29dc9b3bc5276a5e061d2a626de611710e",
+              "sealBlock": null,
+              "sealTxHash": null,
+              "expected": {
+                "owner": {
+                  "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "isSealed": {
+                  "value": false,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "idValue": {
+                  "value": "0x1111111111111111111111111111111111111111111111111111111111111111",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "signedValue": {
+                  "value": "-31",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "amountValue": {
+                  "value": "32",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "byId{w:0x2222222222222222222222222222222222222222222222222222222222222222}": {
+                  "value": "33",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "bySigned{n:-3}": {
+                  "value": "34",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "byAmount{n:12}": {
+                  "value": "35",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                }
+              }
+            },
+            "MockInheritance": {
+              "address": "0x9Df507873C62e9318684F492C0c3FE09Bb0BFCdA",
+              "deployBlock": 12045167,
+              "txHash": "0xb6ab14ee8b23f7f7a31f9c822228864b91d75a3d4c95e261ba892be23e718fca",
+              "sealBlock": null,
+              "sealTxHash": null,
+              "expected": {
+                "owner": {
+                  "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "isSealed": {
+                  "value": false,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "rootValue": {
+                  "value": "41",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "middleBalances{s:0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa}": {
+                  "value": "42",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "ownLabel": {
+                  "value": "own label",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                }
+              }
+            },
+            "MockShadowed": {
+              "address": "0x0d1CcD84d0A7b128eb0C422879F2fD9BB7C3C070",
+              "deployBlock": 12045171,
+              "txHash": "0xf9871f2e623c9c13914067281f6b5e109955dccf8465752025280db1e65f628d",
+              "sealBlock": null,
+              "sealTxHash": null,
+              "expected": {
+                "owner": {
+                  "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "isSealed": {
+                  "value": false,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "MockShadowedBase::shared": {
+                  "value": "51",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "between": {
+                  "value": "52",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "MockShadowedBase::table{n:3}": {
+                  "value": "53",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "MockShadowed::shared": {
+                  "value": "54",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "MockShadowed::table{n:6}": {
+                  "value": "55",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                }
+              }
+            },
+            "MockImmutable": {
+              "address": "0x77EbEd8Af6EC5d0DB10Bf8EaBc69773296c03962",
+              "deployBlock": 12045177,
+              "txHash": "0xbfde6b5375c0471f7f04ebd911c82f8a0fa03369ef3cfd3ac3c2983547b69732",
+              "sealBlock": null,
+              "sealTxHash": null,
+              "expected": {
+                "owner": {
+                  "value": "0xDF456DA75124174FC9A1575C793A679650b4548D",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "isSealed": {
+                  "value": false,
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                },
+                "stored": {
+                  "value": "99",
+                  "blockTag": "latest",
+                  "requiresArchive": false
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
 }
