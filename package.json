@@ -3,6 +3,14 @@
   "version": "0.2.0",
   "description": "Read Solidity contract storage by variable name and a kind-checked path (mapping keys, array indices, struct fields) from Hardhat build-info. Supports Hardhat 2.x and 3.x.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aWoWed/hardhat-storage-decoder.git"
+  },
+  "homepage": "https://github.com/aWoWed/hardhat-storage-decoder#readme",
+  "bugs": {
+    "url": "https://github.com/aWoWed/hardhat-storage-decoder/issues"
+  },
   "keywords": [
     "hardhat",
     "hardhat-plugin",

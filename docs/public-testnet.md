@@ -526,7 +526,7 @@ through public nodes:
 
 ```powershell
 New-Item -ItemType Directory -Force .release-evidence | Out-Null
-npm run readback -- --chain 11155111 --json .release-evidence/readback-g2.json
+node scripts/readback.mjs --chain 11155111 --json .release-evidence/readback-g2.json
 node -e "const r=JSON.parse(require('fs').readFileSync('.release-evidence/readback-g2.json','utf8'));const a=r.reports.flatMap(x=>x.results);const h=a.filter(x=>x.blockTag!=='latest');console.log('exit',r.exitCode,'wrong',a.filter(x=>x.verdict==='wrong').length,'historic',h.length,'historic pass',h.filter(x=>x.verdict==='pass').length)"
 ```
 
@@ -574,7 +574,7 @@ node node_modules/hardhat/dist/src/cli.js run scripts/seal.ts --network sepolia
 Afterwards, from the repo root:
 
 ```powershell
-npm run readback -- --chain 11155111
+node scripts/readback.mjs --chain 11155111
 node scripts/check-sourcify.mjs --chain 11155111
 node scripts/check-docs-manifest.mjs --write
 npm --prefix deployments/example run read
