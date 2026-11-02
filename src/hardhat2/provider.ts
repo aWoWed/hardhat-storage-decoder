@@ -1,5 +1,5 @@
 /**
- * The Hardhat 2 half of `src/core/rpc/getStorageAt.ts`.
+ * Hardhat 2: the three RPC reads of `src/core/rpc/createRpcReaders.ts`, over its provider's `send`.
  *
  * Hardhat 2 exposes one provider for the whole run at `hre.network.provider`, an
  * `EthereumProvider` with a legacy `send(method, params)` helper on top of EIP-1193.
@@ -10,91 +10,57 @@
  */
 
 import type { EthereumProvider } from 'hardhat/types/provider';
-import {
-  type BlockTag,
-  type GetStorageAt,
-  formatBlockTag,
-  formatSlot,
-  parseBlockNumber,
-} from '../core/rpc/getStorageAt.js';
-import { toStorageWord } from '../core/util/bytes.js';
+import { LIMIT_EXCEEDED_CODE, type RpcErrorClass, classifyRpcError } from '../core/rpc/classifyRpcError.js';
+import { type RpcReaders, createRpcReaders } from '../core/rpc/createRpcReaders.js';
 
 /** Called at query time, never at registration; see the file header for why. */
-export type ProviderGetter = () => EthereumProvider;
+type ProviderGetter = () => EthereumProvider;
+
+/** Hardhat 2's `HardhatError` numbers for connection refused, timeout, and a non-JSON-RPC reply. */
+const TRANSPORT_ERROR_NUMBERS: ReadonlySet<unknown> = new Set([108, 109, 110]);
 
 /**
- * `eth_getStorageAt`, normalized to exactly 32 bytes.
+ * What the retry layer should do about a provider failure, for what only Hardhat 2 can tell.
  *
- * Nodes are inconsistent about short-form results (`0x0` and `0x00...00` both occur for an
- * empty slot), so every response goes through `toStorageWord`, which left-pads to a full word
- * and rejects anything longer than one.
+ * Its provider has already retried an HTTP 429 and gives up with its own -32005, so sending
+ * again would stack a second round of retries on the first. It also discards a status other than
+ * 429 and reports an unparseable body as error 110, so a 503 cannot be told from a 401 there:
+ * such a failure is retried, within bounds, whatever the body says. If Hardhat's wording ever
+ * changes, its 429 falls back to `retryable`, which is safe.
  *
- * @param getProvider - Resolves the provider on each call.
- * @returns The reader; it resolves to the slot's 32-byte word.
- * @throws {TypeError} from the returned function (never from this factory), when the node's
- * response is not a string or not valid hex, or when {@link formatSlot} or
- * {@link formatBlockTag} rejects the slot or block tag.
- * @throws {RangeError} when the response is longer than 32 bytes.
- * @throws Any error the provider's `send` rejects with.
+ * @param error - What the provider's `send` rejected with.
+ * @returns The class; everything not recognised here is left to the core's `classifyRpcError`.
  */
-export function createGetStorageAt(getProvider: ProviderGetter): GetStorageAt {
-  return async ({ address, slot, blockTag }) => {
-    const result: unknown = await getProvider().send('eth_getStorageAt', [
-      address,
-      formatSlot(slot),
-      formatBlockTag(blockTag),
-    ]);
-    if (typeof result !== 'string') {
-      throw new TypeError(
-        `eth_getStorageAt returned ${typeof result}, expected a hex string` +
-          ` (address ${address}, slot ${formatSlot(slot)})`
-      );
-    }
-    return toStorageWord(result);
+export function classifyProviderError(error: unknown): RpcErrorClass {
+  const { code, message, number } = (error ?? {}) as {
+    code?: unknown;
+    message?: unknown;
+    number?: unknown;
   };
+  if (
+    code === LIMIT_EXCEEDED_CODE &&
+    typeof message === 'string' &&
+    message.startsWith('Too Many Requests error received from')
+  ) {
+    return 'exhausted';
+  }
+  // Before the core's wording checks: these messages quote the network's name or a whole reply
+  // body, which say nothing about the node's state.
+  if (TRANSPORT_ERROR_NUMBERS.has(number)) return 'retryable';
+  return classifyRpcError(error);
 }
 
 /**
- * `eth_getCode`, used only by the contract/address sanity check in the query builder.
+ * The three RPC reads, on Hardhat 2's `send`.
  *
- * Returns `"0x"` for an address with no code; the builder turns that into a
- * `ContractMismatchError` rather than decoding a layout against an empty account.
- *
- * @param getProvider - Resolves the provider on each call.
- * @returns A reader resolving to the account's code as a hex string.
- * @throws {TypeError} from the returned function (never from this factory), when the node's
- * response is not a string.
- * @throws Whatever {@link formatBlockTag} throws for an invalid block tag.
- * @throws Any error the provider's `send` rejects with.
+ * @param getProvider - Resolves the provider on each call, so no network starts at construction.
+ * @returns The readers; see {@link createRpcReaders} for what they throw.
  */
-export function createGetCode(
-  getProvider: ProviderGetter
-): (address: string, blockTag: BlockTag) => Promise<string> {
-  return async (address, blockTag) => {
-    const result: unknown = await getProvider().send('eth_getCode', [
-      address,
-      formatBlockTag(blockTag),
-    ]);
-    if (typeof result !== 'string') {
-      throw new TypeError(
-        `eth_getCode returned ${typeof result}, expected a hex string (address ${address})`
-      );
-    }
-    return result;
-  };
-}
-
-/**
- * `eth_blockNumber`, used by a dump to turn `latest` into one fixed block for all of its reads.
- *
- * @param getProvider - Resolves the provider on each call.
- * @returns A function resolving to the current block number.
- * @throws Whatever {@link parseBlockNumber} throws for a response that is not a block number
- * (raised from the returned function).
- * @throws Any error the provider's `send` rejects with.
- */
-export function createGetBlockNumber(getProvider: ProviderGetter): () => Promise<bigint> {
-  return async () => {
-    return parseBlockNumber(await getProvider().send('eth_blockNumber', []));
-  };
+export function createProviderReaders(getProvider: ProviderGetter): RpcReaders {
+  return createRpcReaders(
+    (method, params) => getProvider().send(method, params as unknown[]),
+    (method, result, { address, slot }) =>
+      `${method} returned ${typeof result}, expected a hex string` +
+      ` (address ${address}${slot === undefined ? '' : `, slot ${slot}`})`
+  );
 }

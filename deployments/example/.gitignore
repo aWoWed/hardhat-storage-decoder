@@ -1,0 +1,6 @@
+# Build output, the copied mocks, and the local seed's manifest and tarball.
+artifacts/
+cache/
+contracts/
+types/
+.local/

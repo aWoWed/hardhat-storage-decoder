@@ -374,20 +374,43 @@ describe('contract/address sanity check', () => {
     });
   }
 
-  it('accepts code that matches in length and first 32 bytes', async () => {
-    // Tail bytes differ (immutables/metadata), which must be tolerated.
-    const { builder, storage } = withCode(`${deployed.slice(0, -8)}deadbeef`);
+  it('accepts code that differs only where the artifact declares an immutable', async () => {
+    const { builder, storage } = harness({
+      async getDeployedBytecode() {
+        return {
+          object: deployed,
+          immutableReferences: { '1': [{ start: 62, length: 4 }] },
+        };
+      },
+      async getCode() {
+        return `${deployed.slice(0, -8)}deadbeef`;
+      },
+    });
     storage.set(0n, word(9));
     await expect(
       builder.contract('SimpleStorage.sol:SimpleStorage').target(TARGET).name('count').read()
     ).resolves.toMatchObject({ value: 9n });
   });
 
+  it('rejects a same-length tail difference when no references are supplied', async () => {
+    const { builder } = withCode(`${deployed.slice(0, -8)}deadbeef`);
+    await expect(
+      builder.contract('SimpleStorage.sol:SimpleStorage').target(TARGET).name('count').read()
+    ).rejects.toMatchObject({
+      name: 'ContractMismatchError',
+      reason: 'code-differs',
+      detail: expect.stringMatching(/at byte 62.*no immutable references/),
+    });
+  });
+
   it('rejects an address with no code', async () => {
     const { builder } = withCode('0x');
     await expect(
       builder.contract('SimpleStorage.sol:SimpleStorage').target(TARGET).name('count').read()
-    ).rejects.toThrow(/no contract code/);
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('no contract code'),
+      reason: 'no-code',
+    });
   });
 
   it('rejects a length mismatch', async () => {
@@ -397,11 +420,41 @@ describe('contract/address sanity check', () => {
     ).rejects.toThrow(ContractMismatchError);
   });
 
-  it('rejects a first-32-bytes mismatch', async () => {
+  it('rejects a difference inside the first 32 bytes, naming the byte', async () => {
     const { builder } = withCode(`0x6081${'ab'.repeat(64)}`);
     await expect(
       builder.contract('SimpleStorage.sol:SimpleStorage').target(TARGET).name('count').read()
-    ).rejects.toThrow(/first 32 bytes/);
+    ).rejects.toThrow(/at byte 1\b/);
+  });
+
+  it('takes the bytecode from an ExpectedBytecode, with a prefix and in any case', async () => {
+    const { builder, storage } = harness({
+      async getDeployedBytecode() {
+        return { object: deployed.toUpperCase().replace('0X', '0x') };
+      },
+      async getCode() {
+        return deployed;
+      },
+    });
+    storage.set(0n, word(4));
+    await expect(
+      builder.contract('SimpleStorage.sol:SimpleStorage').target(TARGET).name('count').read()
+    ).resolves.toMatchObject({ value: 4n });
+  });
+
+  it('is skipped when an ExpectedBytecode has empty bytecode', async () => {
+    const { builder, storage } = harness({
+      async getDeployedBytecode() {
+        return { object: '0x' };
+      },
+      async getCode() {
+        return deployed;
+      },
+    });
+    storage.set(0n, word(5));
+    await expect(
+      builder.contract('SimpleStorage.sol:SimpleStorage').target(TARGET).name('count').read()
+    ).resolves.toMatchObject({ value: 5n });
   });
 
   it('is skipped entirely when the adapter cannot supply both sides', async () => {

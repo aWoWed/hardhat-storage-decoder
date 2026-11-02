@@ -1,0 +1,19 @@
+{
+  "name": "hardhat-storage-decoder-deployments-hh2",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Hardhat 2.x project that reads the sealed public mocks.",
+  "type": "commonjs",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/chai": "4.3.20",
+    "@types/mocha": "10.0.10",
+    "@types/node": "22.20.5",
+    "chai": "4.5.0",
+    "hardhat": "2.29.1",
+    "ts-node": "10.9.2",
+    "typescript": "5.9.3"
+  }
+}

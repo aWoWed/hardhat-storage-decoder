@@ -20,6 +20,7 @@ import {
   parseStorageLayout,
 } from '../core/layout/parseStorageLayout.js';
 import { ContractNotFoundError, StorageDecoderError } from '../core/query/errors.js';
+import type { ExpectedBytecode } from '../core/query/StorageQueryBuilder.js';
 import { type ArtifactStamp, sameStamp, stampOf } from '../shared/artifactStamp.js';
 
 /**
@@ -57,7 +58,11 @@ interface ContractOutput {
   readonly evm?: {
     readonly deployedBytecode?: {
       /** Hex bytecode without a `0x` prefix. */
-      readonly object?: string
+      readonly object?: string;
+      /** Where immutables go; absent when `outputSelection` left it out. */
+      readonly immutableReferences?: ExpectedBytecode['immutableReferences'];
+      /** Where library addresses go; absent when `outputSelection` left it out. */
+      readonly linkReferences?: ExpectedBytecode['linkReferences'];
     };
   };
 }
@@ -66,8 +71,11 @@ interface ContractOutput {
 interface CachedContract {
   /** The parsed storage layout. */
   readonly layout: ParsedStorageLayout;
-  /** `0x`-prefixed runtime bytecode, or `undefined` when the build-info has none. */
-  readonly deployedBytecode: string | undefined;
+  /**
+   * `0x`-prefixed runtime bytecode, with its references when the build-info has any, or
+   * `undefined` when the build-info has no bytecode.
+   */
+  readonly deployedBytecode: string | ExpectedBytecode | undefined;
 }
 
 /** One cached load: the promise, and the artifact stamp taken just before it started. */
@@ -106,10 +114,11 @@ export interface BuildInfoReader {
    * The contract's runtime bytecode, used for the contract/address sanity check.
    *
    * @param fullyQualifiedName - `"<source name>:<contract name>"`, e.g. `contracts/Vault.sol:Vault`.
-   * @returns `0x`-prefixed runtime bytecode, or `undefined` when the build-info has none.
+   * @returns `0x`-prefixed runtime bytecode, as an {@link ExpectedBytecode} when the build-info
+   *   has its references and a plain string when not, or `undefined` when it has no bytecode.
    * @throws Same errors as {@link BuildInfoReader.getLayout}, since both share one load.
    */
-  getDeployedBytecode(fullyQualifiedName: string): Promise<string | undefined>;
+  getDeployedBytecode(fullyQualifiedName: string): Promise<string | ExpectedBytecode | undefined>;
 }
 
 /**
@@ -334,11 +343,16 @@ export function createBuildInfoReader(hre: HardhatRuntimeEnvironment): BuildInfo
       constantAndImmutableNames: astDerived.constantAndImmutableNamesBySource.get(sourceName) ?? [],
     });
 
-    const object = contract.evm?.deployedBytecode?.object;
+    const { object, immutableReferences, linkReferences } = contract.evm?.deployedBytecode ?? {};
+    if (typeof object !== 'string' || object.length === 0) {
+      return { layout, deployedBytecode: undefined };
+    }
     return {
       layout,
       deployedBytecode:
-        typeof object === 'string' && object.length > 0 ? `0x${object}` : undefined,
+        immutableReferences === undefined && linkReferences === undefined
+          ? `0x${object}`
+          : { object: `0x${object}`, immutableReferences, linkReferences },
     };
   }
 

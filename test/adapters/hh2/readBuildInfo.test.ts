@@ -352,6 +352,33 @@ describe('createBuildInfoReader (Hardhat 2)', () => {
     expect(fake.calls.getBuildInfo).toBe(2);
   });
 
+  it("passes solc's references along with the bytecode", async () => {
+    const fake = await fakeHre();
+    await writeArtifact(fake.artifactPath(VAULT), '{"v":1}', 1_700_000_000);
+    const immutableReferences = { '7': [{ start: 1, length: 1 }] };
+    const linkReferences = { 'a.sol': { L: [{ start: 0, length: 1 }] } };
+    fake.current = {
+      id: 'build-1',
+      output: {
+        sources: {},
+        contracts: {
+          'contracts/Vault.sol': {
+            Vault: {
+              storageLayout: uintLayout('total'),
+              evm: { deployedBytecode: { object: '6001', immutableReferences, linkReferences } },
+            },
+          },
+        },
+      },
+    };
+
+    await expect(createBuildInfoReader(fake.hre).getDeployedBytecode(VAULT)).resolves.toEqual({
+      object: '0x6001',
+      immutableReferences,
+      linkReferences,
+    });
+  });
+
   it('still reads when Hardhat has no formArtifactPathFromFullyQualifiedName', async () => {
     const fake = await fakeHre({ withArtifactPaths: false });
     fake.current = fakeBuild('build-1', 'total').buildInfo;

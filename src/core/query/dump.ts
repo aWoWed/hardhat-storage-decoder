@@ -22,6 +22,7 @@ import {
   type DecodedValue,
   awaitObligationsInOrder,
   dynamicBytesLength,
+  isLongForm,
 } from '../slots/decode.js';
 import {
   type BoundsObligation,
@@ -35,7 +36,7 @@ import {
 } from '../slots/deriveSlot.js';
 import { WORD_SIZE, bytesToBigInt, toStorageWord } from '../util/bytes.js';
 import { DumpInconsistentError, DumpTooLargeError, UnsupportedTypeError } from './errors.js';
-import { CallScope, type QueryState, readLeaf, requireComplete } from './execute.js';
+import { type CallScope, type QueryState, handled, readLeaf, requireComplete } from './execute.js';
 import type { StorageDecoderContext } from './StorageQueryBuilder.js';
 
 /** Options of `readAll()`. Both are optional; an omitted options object behaves like `{}`. */
@@ -337,7 +338,7 @@ interface Witness {
  *     root's type. No storage slot has been read up to here.
  *  6. The lengths of dynamic arrays the path indexes are read and checked, outermost first.
  *  7. The root is expanded. Sibling branches (struct fields, array elements, mapping entries)
- *     run concurrently, limited by the scope's semaphore.
+ *     run concurrently, limited by the context's limiter.
  *  8. If the tag can move, every length relied on is read once more and compared.
  *
  * Limits and the cancellation of unsent reads are described on {@link DumpTooLargeError}; a
@@ -348,6 +349,7 @@ interface Witness {
  * @param context - Layout source and RPC functions of the decoder the builder belongs to.
  * @param state - What the builder accumulated; must name a contract, an address and a variable.
  * @param options - The caller's options, or `undefined` for the defaults.
+ * @param scope - The scope of this call; supplies the memos, the limit and the retry budget.
  * @returns The dumped value, the patterns of mappings left empty for lack of keys, the root's
  *   type label and the block tag the reads were sent with.
  * @throws {DumpTooLargeError} when a key list (`keys`), one array's length (`array`) or the
@@ -371,13 +373,13 @@ interface Witness {
 export async function readAllAt(
   context: StorageDecoderContext,
   state: QueryState,
-  options: ReadAllOptions | undefined
+  options: ReadAllOptions | undefined,
+  scope: CallScope
 ): Promise<StorageDumpResult> {
   const { fullyQualifiedName, address, variableName, declaredIn, segments, blockTag } =
     requireComplete(state, 'readAll');
   const args = parseArguments(options === undefined ? {} : options);
 
-  const scope = new CallScope();
   const layout = await scope.layout(context, fullyQualifiedName);
 
   // The block is settled before anything is read, so the contract check and every storage
@@ -385,7 +387,7 @@ export async function readAllAt(
   // about "safe", "finalized" or "pending".
   let effectiveTag = blockTag;
   if (blockTag === 'latest' && context.getBlockNumber !== undefined) {
-    effectiveTag = await context.getBlockNumber();
+    effectiveTag = await scope.blockNumber(context);
   }
 
   // Awaited before any length is acted on: against the wrong contract every length is garbage.
@@ -420,9 +422,8 @@ export async function readAllAt(
   const cachedRead: SingleSlotReader = (slot) => {
     let pending = cache.get(slot);
     if (pending === undefined) {
-      pending = read(slot);
       // Marked handled: once a sibling branch has failed the dump, nobody awaits this one.
-      pending.catch(() => {});
+      pending = handled(read(slot));
       cache.set(slot, pending);
     }
     return pending;
@@ -644,17 +645,6 @@ export async function readAllAt(
     typeLabel: getTypeInfo(layout, root.typeId).label,
     blockTag: effectiveTag,
   };
-}
-
-/**
- * Whether a `string`/`bytes` header word is in the long form, where the data lives in
- * separate slots. The lowest bit of the last byte is set for long, clear for short.
- *
- * @param header - The 32-byte header word.
- * @returns `true` for the long form.
- */
-function isLongForm(header: Uint8Array): boolean {
-  return ((header[WORD_SIZE - 1] as number) & 1) === 1;
 }
 
 /**

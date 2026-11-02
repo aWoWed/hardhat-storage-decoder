@@ -3,6 +3,14 @@
   "version": "0.2.0",
   "description": "Read Solidity contract storage by variable name and a kind-checked path (mapping keys, array indices, struct fields) from Hardhat build-info. Supports Hardhat 2.x and 3.x.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aWoWed/hardhat-storage-decoder.git"
+  },
+  "homepage": "https://github.com/aWoWed/hardhat-storage-decoder#readme",
+  "bugs": {
+    "url": "https://github.com/aWoWed/hardhat-storage-decoder/issues"
+  },
   "keywords": [
     "hardhat",
     "hardhat-plugin",
@@ -70,15 +78,28 @@
     "build": "tsup",
     "prepack": "npm run build",
     "test:unit": "vitest run",
-    "test:unit:watch": "vitest",
     "test:e2e:hh2": "node scripts/run-e2e.mjs hh2",
     "test:e2e:hh3": "node scripts/run-e2e.mjs hh3",
     "typecheck:core": "tsc --noEmit -p tsconfig.json && node scripts/check-core-purity.mjs",
     "typecheck:hh2": "tsc --noEmit -p tsconfig.hardhat2.json",
     "typecheck:hh3": "tsc --noEmit -p tsconfig.hardhat3.json",
     "verify:package": "npm run build && node scripts/check-dist-error-names.mjs && node scripts/check-dist-entrypoints.mjs && publint && attw --pack . && npm publish --dry-run",
+    "check:secrets": "node scripts/check-secrets.mjs --self-test && node scripts/check-secrets.mjs && node scripts/check-manifest-public.mjs",
+    "check:workflows": "node scripts/check-workflows.mjs --self-test && node scripts/check-workflows.mjs",
+    "deployments:coverage": "node scripts/check-deployment-coverage.mjs --self-test && node scripts/check-deployment-coverage.mjs",
+    "deployments:test": "node scripts/run-deployment-tests.mjs",
     "fixtures:generate": "node scripts/generate-fixtures.mjs",
-    "bench": "node scripts/bench.mjs"
+    "bench": "node scripts/bench.mjs",
+    "deployments:e2e:local": "node scripts/readback-scenarios.mjs e2e",
+    "deployments:cross-version": "node scripts/run-cross-version.mjs",
+    "readback": "node scripts/readback.mjs",
+    "readback:negative-control": "node scripts/readback-scenarios.mjs negative",
+    "readback:scenarios": "node scripts/readback-scenarios.mjs faults",
+    "oracle:layout": "node scripts/oracle-layout.mjs",
+    "oracle:values": "node scripts/oracle-values.mjs",
+    "clients": "node scripts/clients/run-client.mjs",
+    "mainnet:check": "node scripts/mainnet-check.mjs",
+    "release:gate": "node scripts/release-gate.mjs"
   },
   "peerDependencies": {
     "hardhat": "^2.0.0 || ^3.0.0"
@@ -94,8 +115,10 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
     "@types/node": "^22.10.0",
+    "esbuild": "0.27.7",
     "hardhat-v2": "npm:hardhat@^2.29.0",
     "hardhat-v3": "npm:hardhat@^3.13.0",
+    "js-yaml": "4.3.1",
     "publint": "^0.3.12",
     "solc": "0.8.26",
     "tsup": "^8.5.0",

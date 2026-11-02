@@ -15,15 +15,17 @@
 import type { ArtifactManager } from 'hardhat/types/artifacts';
 import { readFile } from 'node:fs/promises';
 import {
-  ContractNotFoundError,
   type ParsedStorageLayout,
   type RawStorageLayout,
   extractConstantAndImmutableNames,
   extractDeclaringContracts,
   extractUserDefinedValueTypes,
   parseStorageLayout,
-} from '../core/index.js';
+} from '../core/layout/parseStorageLayout.js';
+import { ContractNotFoundError } from '../core/query/errors.js';
+import type { ExpectedBytecode } from '../core/query/StorageQueryBuilder.js';
 import { type ArtifactStamp, sameStamp, stampOf } from '../shared/artifactStamp.js';
+import { isPlainObject } from '../shared/isPlainObject.js';
 import { MissingStorageLayoutError } from './ensureStorageLayoutOutput.js';
 
 // ---------------------------------------------------------------------------------------
@@ -73,6 +75,10 @@ interface ArtifactLike {
   readonly buildInfoId?: string;
   /** Runtime bytecode as a hex string. */
   readonly deployedBytecode: string;
+  /** Where immutables go in the runtime bytecode. */
+  readonly immutableReferences?: ExpectedBytecode['immutableReferences'];
+  /** Where library addresses go in the runtime bytecode. */
+  readonly deployedLinkReferences?: ExpectedBytecode['linkReferences'];
 }
 
 /** Everything cached for one contract, all of it valid for one {@link ArtifactStamp}. */
@@ -183,14 +189,18 @@ export class Hardhat3LayoutReader {
    * Artifact `deployedBytecode`, for the query builder's contract/address sanity check.
    *
    * @param fullyQualifiedName - `path/to/File.sol:Contract`, using the user source name.
-   * @returns The artifact's runtime bytecode as a hex string.
+   * @returns The artifact's runtime bytecode, as an {@link ExpectedBytecode} when the artifact
+   *   has its references and a plain hex string when not.
    * @throws {ContractNotFoundError} when the artifact cannot be found.
    */
-  async getDeployedBytecode(fullyQualifiedName: string): Promise<string | undefined> {
+  async getDeployedBytecode(fullyQualifiedName: string): Promise<string | ExpectedBytecode | undefined> {
     // Deliberately the artifact promise only: a contract whose layout cannot be loaded still
     // has bytecode, and the layout's own error is `getLayout`'s to report.
     const entry = await this.#entryFor(fullyQualifiedName);
-    return (await entry.artifact).deployedBytecode;
+    const { deployedBytecode, immutableReferences, deployedLinkReferences } = await entry.artifact;
+    return immutableReferences === undefined && deployedLinkReferences === undefined
+      ? deployedBytecode
+      : { object: deployedBytecode, immutableReferences, linkReferences: deployedLinkReferences };
   }
 
   /**
@@ -516,11 +526,6 @@ export class Hardhat3LayoutReader {
       return undefined;
     }
   }
-}
-
-/** True for a non-null, non-array object. */
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**

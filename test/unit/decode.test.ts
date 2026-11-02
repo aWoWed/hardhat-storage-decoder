@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { IndexOutOfBoundsError, UnsupportedTypeError } from '../../src/core/query/errors.js';
-import { decode, resolveObligations, resolveReadPlan } from '../../src/core/slots/decode.js';
-import type { BoundsObligation } from '../../src/core/slots/deriveSlot.js';
+import { awaitObligationsInOrder, decode, resolveReadPlan } from '../../src/core/slots/decode.js';
 import { hexToBytes, utf8ToBytes } from '../../src/core/util/bytes.js';
 import { MockStorage, arrayBase, packWord, word } from './helpers.js';
 
@@ -166,53 +165,15 @@ describe('resolveReadPlan for string/bytes', () => {
   });
 });
 
-describe('resolveObligations', () => {
-  const obligation = (
-    lengthSlot: bigint,
-    index: bigint,
-    segmentIndex: number
-  ): BoundsObligation => ({
-    lengthSlot,
-    index,
-    segmentIndex,
-    typeLabel: 'uint256[]',
-    variableName: 'arr',
-  });
-
-  it('passes when the index is within the stored length', async () => {
-    const storage = new MockStorage().set(0n, word(4));
-    await expect(
-      resolveObligations([obligation(0n, 3n, 0)], storage.reader())
-    ).resolves.toBeUndefined();
-  });
-
-  it('throws IndexOutOfBoundsError naming the real length', async () => {
-    const storage = new MockStorage().set(0n, word(4));
-    await expect(resolveObligations([obligation(0n, 4n, 0)], storage.reader())).rejects.toThrow(
-      IndexOutOfBoundsError
-    );
-    await expect(resolveObligations([obligation(0n, 9n, 0)], storage.reader())).rejects.toThrow(
-      /length 4/
-    );
-  });
-
+describe('awaitObligationsInOrder', () => {
   it('treats an unwritten array as empty rather than reading a plausible zero', async () => {
-    const storage = new MockStorage();
-    await expect(resolveObligations([obligation(0n, 0n, 0)], storage.reader())).rejects.toThrow(
-      IndexOutOfBoundsError
-    );
-  });
+    const obligation = { lengthSlot: 0n, index: 0n, segmentIndex: 0, typeLabel: 'uint256[]', variableName: 'arr' };
+    const unwritten = new MockStorage().reader()(0n);
 
-  it('reports the OUTERMOST failure and never evaluates the inner one', async () => {
-    // arr[999][3] where the outer array has length 2: the inner obligation was derived from
-    // an index that does not exist, so evaluating it would be meaningless.
-    const storage = new MockStorage().set(0n, word(2)).set(50n, word(99));
-    const obligations = [obligation(0n, 999n, 0), obligation(50n, 3n, 1)];
+    const failure = awaitObligationsInOrder([obligation], [unwritten]);
 
-    await expect(resolveObligations(obligations, storage.reader())).rejects.toThrow(
-      /Index 999 is out of bounds/
-    );
-    expect(storage.reads.map((r) => r.slot)).toEqual([0n]);
+    await expect(failure).rejects.toThrow(IndexOutOfBoundsError);
+    await expect(failure).rejects.toThrow(/length 0/);
   });
 });
 

@@ -139,7 +139,8 @@ const firstThree = await vault.name('items').readIndices([0, 1, 2]);
 
 The contract/address check runs once per contract and address for the whole call, and every
 read goes out together. If any query fails, the call rejects with the error of the first failing
-query in the list.
+query in the list; a failure that stops the call becomes the error of queries it stopped, so only a
+successful result rules out a wrong address or a bad index.
 
 ### Dumping a whole variable
 
@@ -170,6 +171,18 @@ levels combine as a cross-product. `Map` keys are your own values, unmodified, s
 up with the same value you supplied. See [`USAGE.md`](USAGE.md) for the full rules, the size cap
 (`maxElements`, default 10,000) and how a dump stays on one block.
 
+## Public testnet mocks
+
+[`docs/public-testnet.md`](docs/public-testnet.md) describes sealed mocks with known values, with a
+copyable read for each and what each kind of check proves. Addresses appear there after deployment.
+Sepolia is a demo and a transport check, and its end date is unsettled. Correctness rests on the
+independent oracles and the mainnet check. `npm --prefix deployments/example run read:local` runs
+every read on the page against a local Anvil; the example is in the repository, not the package.
+
+Your build's `evmVersion` and optimizer settings must match the deployed build, or the address check
+rejects it. If your RPC URL holds a token, do not log raw provider errors: they pass through this
+plugin unchanged and can quote part of the URL. See the page for details.
+
 ## Errors
 
 Nothing is ever silently wrong. Each failure of the query itself has its own class:
@@ -177,7 +190,7 @@ Nothing is ever silently wrong. Each failure of the query itself has its own cla
 | Error | Cause |
 |---|---|
 | `ContractNotFoundError` | `.contract(fqn)` names a contract with no layout in build-info |
-| `ContractMismatchError` | the code at `.target(address)` does not plausibly match `.contract(fqn)` |
+| `ContractMismatchError` | the code at `.target(address)` does not match `.contract(fqn)` |
 | `VariableNotFoundError` | unknown variable — with a distinct message when it is a `constant`/`immutable`, which never appear in `storageLayout`, and when the name exists but is not declared in the contract given as `declaredIn` |
 | `AmbiguousVariableError` | the layout has more than one variable with that name (a private variable re-declared along the inheritance chain) and `.name()` was not given a `{ declaredIn }` that singles one out |
 | `PathSegmentCountMismatchError` | too few or too many path segments |
@@ -221,7 +234,7 @@ per-contract layout.
   automatically (by replaying transactions on a local network) is planned for v2.
 - **Proxy contracts.** Reading through a proxy means the implementation's layout against the
   proxy's address; you can do it manually by passing the implementation FQN, but there is no
-  automatic detection, and the `ContractMismatchError` heuristic will reject the combination.
+  automatic detection, and the `ContractMismatchError` check will reject the combination.
 - **Address → FQN auto-resolution.** `.contract(fqn)` is required.
 - **Contracts without local source.** Layouts come from your own build-info only.
 - **Empirical/runtime slot probing** (Foundry `stdstore`'s `vm.record` approach). Slots are

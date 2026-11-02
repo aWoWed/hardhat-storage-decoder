@@ -1,5 +1,5 @@
 /**
- * Hardhat 3: the `GetStorageAt` implementation, over an EIP-1193 provider.
+ * Hardhat 3: the three RPC reads of `src/core/rpc/createRpcReaders.ts`, over an EIP-1193 provider.
  *
  * In HH3 the provider comes from a `NetworkConnection` (created by `hre.network.create()` or
  * `getOrCreate()`; `connect()` is deprecated), not from a global `hre.network.provider` as in
@@ -10,91 +10,44 @@
  */
 
 import type { EthereumProvider } from 'hardhat/types/providers';
-import {
-  type BlockTag,
-  type GetStorageAt,
-  formatBlockTag,
-  formatSlot,
-  parseBlockNumber,
-  toStorageWord,
-} from '../core/index.js';
+import { LIMIT_EXCEEDED_CODE, type RpcErrorClass, classifyRpcError } from '../core/rpc/classifyRpcError.js';
+import { type RpcReaders, createRpcReaders } from '../core/rpc/createRpcReaders.js';
+
+/** Hardhat 3's `HardhatError` numbers for a non-JSON-RPC reply, connection refused, and timeout. */
+const TRANSPORT_ERROR_NUMBERS: ReadonlySet<unknown> = new Set([702, 703, 704]);
 
 /**
- * Narrow a JSON-RPC result to a string.
+ * What the retry layer should do about a provider failure, for what only Hardhat 3 can tell.
  *
- * @param result - The value returned by `provider.request`.
- * @param method - RPC method name, used in the error message.
- * @returns `result`, unchanged.
- * @throws {TypeError} when `result` is not a string (the message names `method` and the actual type).
+ * Its provider has already retried an HTTP 429 and gives up with a -32005 whose cause has that
+ * status, so sending again would stack a second round of retries on the first. If that shape
+ * ever changes, it falls back to `retryable`, which is safe.
+ *
+ * @param error - What the provider's `request` rejected with.
+ * @returns The class; everything not recognised here is left to the core's `classifyRpcError`.
  */
-function expectHexString(result: unknown, method: string): string {
-  if (typeof result !== 'string') {
-    throw new TypeError(
-      `${method} returned ${result === null ? 'null' : typeof result}, expected a hex string`
-    );
-  }
-  return result;
+export function classifyProviderError(error: unknown): RpcErrorClass {
+  const { code, cause, number } = (error ?? {}) as {
+    code?: unknown;
+    cause?: { statusCode?: unknown } | null;
+    number?: unknown;
+  };
+  if (code === LIMIT_EXCEEDED_CODE && cause?.statusCode === 429) return 'exhausted';
+  // Before the core's wording checks: these messages quote the network's name or a whole reply
+  // body, which say nothing about the node's state.
+  if (TRANSPORT_ERROR_NUMBERS.has(number)) return 'retryable';
+  return classifyRpcError(error);
 }
 
 /**
- * Bind an `eth_getStorageAt` reader to one connection's provider.
+ * The three RPC reads, on one connection's EIP-1193 provider.
  *
- * `toStorageWord` left-pads: some nodes return a shortened quantity (e.g. `"0x0"`) rather
- * than a full 32-byte word, and every decoder in the core assumes exactly 32 bytes.
- *
- * @param provider - The connection's EIP-1193 provider.
- * @returns A `GetStorageAt` that resolves to the slot's 32-byte word.
- * @throws {TypeError} from the returned function (never from this factory), when the node's
- *   reply is not a string or not valid hex, or when {@link formatSlot} or
- *   {@link formatBlockTag} rejects the slot or block tag.
- * @throws {RangeError} when the reply is longer than 32 bytes.
- * @throws Any error the provider's `request` rejects with.
+ * @param provider - The connection's provider.
+ * @returns The readers; see {@link createRpcReaders} for what they throw.
  */
-export function createGetStorageAt(provider: EthereumProvider): GetStorageAt {
-  return async ({ address, slot, blockTag }) => {
-    const result = await provider.request({
-      method: 'eth_getStorageAt',
-      params: [address, formatSlot(slot), formatBlockTag(blockTag)],
-    });
-    return toStorageWord(expectHexString(result, 'eth_getStorageAt'));
-  };
-}
-
-/**
- * Bind an `eth_getCode` reader, used for the contract/address sanity check.
- *
- * @param provider - The connection's EIP-1193 provider.
- * @returns A function resolving to the hex bytecode at `address` for `blockTag`.
- * @throws {TypeError} from the returned function (never from this factory), when the node's
- *   reply is not a string.
- * @throws Whatever {@link formatBlockTag} throws for an invalid block tag.
- * @throws Any error the provider's `request` rejects with.
- */
-export function createGetCode(
-  provider: EthereumProvider
-): (address: string, blockTag: BlockTag) => Promise<string> {
-  return async (address, blockTag) => {
-    const result = await provider.request({
-      method: 'eth_getCode',
-      params: [address, formatBlockTag(blockTag)],
-    });
-    return expectHexString(result, 'eth_getCode');
-  };
-}
-
-/**
- * Bind an `eth_blockNumber` reader, used to pin a `latest` dump to one block.
- *
- * Returned as a `bigint` so it can be passed straight back as a numeric block tag.
- *
- * @param provider - The connection's EIP-1193 provider.
- * @returns A function resolving to the current block number.
- * @throws Whatever {@link parseBlockNumber} throws for a reply that is not a block number
- *   (raised from the returned function).
- * @throws Any error the provider's `request` rejects with.
- */
-export function createGetBlockNumber(provider: EthereumProvider): () => Promise<bigint> {
-  return async () => {
-    return parseBlockNumber(await provider.request({ method: 'eth_blockNumber', params: [] }));
-  };
+export function createProviderReaders(provider: Pick<EthereumProvider, 'request'>): RpcReaders {
+  return createRpcReaders(
+    (method, params) => provider.request({ method, params }),
+    (method, result) => `${method} returned ${result === null ? 'null' : typeof result}, expected a hex string`
+  );
 }

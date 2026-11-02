@@ -7,7 +7,8 @@ import { setFlagsFromString } from 'node:v8';
 import { runInNewContext } from 'node:vm';
 import { afterEach, describe, expect, it } from 'vitest';
 import { MissingStorageLayoutError } from '../../../src/hardhat3/ensureStorageLayoutOutput.js';
-import { AmbiguousVariableError, getVariable } from '../../../src/core/index.js';
+import { AmbiguousVariableError } from '../../../src/core/index.js';
+import { getVariable } from '../../../src/core/layout/parseStorageLayout.js';
 import { Hardhat3LayoutReader } from '../../../src/hardhat3/readBuildInfo.js';
 
 // ---------------------------------------------------------------------------------------
@@ -96,6 +97,10 @@ interface ArtifactSpec {
   /** `null` writes an artifact with no `inputSourceName` at all. */
   readonly inputSourceName?: string | null;
   readonly buildInfoId: string;
+  /** Written as the artifact's `immutableReferences` when present. */
+  readonly immutableReferences?: unknown;
+  /** Written as the artifact's `deployedLinkReferences` when present. */
+  readonly deployedLinkReferences?: unknown;
 }
 
 interface ManagerOptions {
@@ -160,6 +165,8 @@ class FakeProject {
         : { inputSourceName: spec.inputSourceName ?? `project/${sourceName}` }),
       buildInfoId: spec.buildInfoId,
       deployedBytecode: BYTECODE,
+      immutableReferences: spec.immutableReferences,
+      deployedLinkReferences: spec.deployedLinkReferences,
     });
     await utimes(path, mtimeSeconds, mtimeSeconds);
   }
@@ -316,6 +323,24 @@ async function settleAndCollect(): Promise<void> {
 }
 
 describe('Hardhat3LayoutReader', () => {
+  it("passes the artifact's references along with the bytecode", async () => {
+    const project = await newProject();
+    const immutableReferences = { '7': [{ start: 1, length: 1 }] };
+    const deployedLinkReferences = { 'a.sol': { L: [{ start: 0, length: 1 }] } };
+    await project.writeArtifact(
+      { buildInfoId: 'build-1', immutableReferences, deployedLinkReferences },
+      1_000
+    );
+
+    await expect(
+      new Hardhat3LayoutReader(project.manager()).getDeployedBytecode(VAULT)
+    ).resolves.toEqual({
+      object: BYTECODE,
+      immutableReferences,
+      linkReferences: deployedLinkReferences,
+    });
+  });
+
   describe('what a read costs (AC 12)', () => {
     it('reads the artifact once across repeated bytecode and layout lookups', async () => {
       const project = await newProject();

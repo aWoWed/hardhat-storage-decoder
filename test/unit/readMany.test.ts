@@ -12,7 +12,8 @@ import {
   PathSegmentKindMismatchError,
   VariableNotFoundError,
 } from '../../src/core/query/errors.js';
-import { StorageQueryBuilder } from '../../src/core/query/StorageQueryBuilder.js';
+import type { StorageDecoderOptions } from '../../src/core/query/limiter.js';
+import { StorageQueryBuilder, createStorageDecoder } from '../../src/core/query/StorageQueryBuilder.js';
 import { DeferredChain, slotLabel } from './deferred.js';
 import { addressKey, arrayBase, longBytesHeader, mappingSlot, word } from './helpers.js';
 
@@ -21,9 +22,9 @@ const BOB = '0x2222222222222222222222222222222222222222';
 const TARGET = '0x3333333333333333333333333333333333333333';
 const OTHER_TARGET = '0x4444444444444444444444444444444444444444';
 
-function setup() {
+function setup(options?: StorageDecoderOptions) {
   const chain = new DeferredChain();
-  const builder = new StorageQueryBuilder(chain.context());
+  const builder = createStorageDecoder(chain.context(), options);
   return {
     chain,
     builder,
@@ -246,7 +247,8 @@ describe('readMany', () => {
   });
 
   it('reads 100 keys with 100 slot reads and one contract check, all together', async () => {
-    const { chain, builder, inherited } = setup();
+    // Above the default limit, so that this tests which calls are issued together, not the limit.
+    const { chain, builder, inherited } = setup({ maxConcurrentReads: 256 });
     const keys = Array.from({ length: 100 }, (_unused, i) => `0x${(i + 1).toString(16).padStart(40, '0')}`);
 
     const { rounds, value } = await settle(
@@ -337,7 +339,8 @@ describe('readKeys and readIndices', () => {
   });
 
   it('reads the array length once for 100 indices, in the same round as the values', async () => {
-    const { chain, arrays } = setup();
+    // Above the default limit, as in the 100-key test.
+    const { chain, arrays } = setup({ maxConcurrentReads: 256 });
     chain.storage.set(3n, word(100)); // words.length
     const indices = Array.from({ length: 100 }, (_unused, i) => i);
     for (const i of indices) chain.storage.set(arrayBase(3n) + BigInt(i), word(i * 2));

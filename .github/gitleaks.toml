@@ -1,0 +1,49 @@
+# gitleaks 8.30.1. Matches the allowlist in scripts/check-secrets.mjs: test vectors and public
+# manifest fields may hold 64-hex values, and no key is exempted anywhere. `generic-api-key` is also
+# the rule that catches `PRIVATE_KEY=<hex>`, so a path alone would exempt keys. Each entry therefore
+# needs the path and the shape of the line.
+title = "hardhat-storage-decoder"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Test vectors: mapping keys written as bigint literals, such as SIGNED_KEY"
+targetRules = ["generic-api-key"]
+condition = "AND"
+regexTarget = "line"
+regexes = ['''^\s*const [A-Z_]+_KEY = -?[0-9_]+n;\s*$''']
+paths = [
+  '''^test/unit/bytes\.test\.ts$''',
+  '''^test/unit/deriveSlot\.test\.ts$''',
+  '''^test/fixtures/e2e/10-values\.test\.ts$''',
+  '''^test/fixtures/e2e/20-mappings\.test\.ts$''',
+]
+
+# A line rule cannot see the `expected` parent of `value`, or of the one 64-hex form a name may
+# hold; check-secrets.mjs checks both field paths. `=` and quotes are not name characters, so
+# `api_key=...{w:...}` does not match.
+[[allowlists]]
+description = "Public manifest fields: transaction hashes, expected values, and a bytes32 mapping key in an entry name"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^deployments/manifest/deployments\.json$''']
+regexTarget = "line"
+regexes = [
+  '''^\s*"(?:txHash|signedTxHash|sealTxHash|blockHash|value)"\s*:\s*"0x[0-9a-fA-F]{64}",?\s*$''',
+  '''^\s*"[\w:.\[\]{}@-]*\{w:0x[0-9a-fA-F]{64}\}[\w:.\[\]{}@-]*"\s*:\s*\{\s*$''',
+]
+
+# Not in Step 1: mapping keys here are 20-byte mainnet addresses, too short to be a private key.
+[[allowlists]]
+description = "Mainnet candidates: address mapping keys in a read path"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^deployments/mainnet/candidates\.json$''']
+regexTarget = "line"
+regexes = ['''^\s*"path":\s*\[\["key",\s*"0x[0-9a-fA-F]{40}"\](?:,\s*\["(?:key|field|index)",\s*(?:[0-9]+|"[A-Za-z0-9_]+")\])*\],?\s*$''']
+
+[[rules]]
+id = "split-hex-word"
+description = "A 32-byte word cut in two, which hides it from a 64-hex rule"
+regex = '''(?:^|[^0-9a-zA-Z])(?:0[xX])?[0-9a-fA-F]{32}:(?:0[xX])?[0-9a-fA-F]{32}(?:[^0-9a-zA-Z]|$)'''

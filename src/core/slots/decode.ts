@@ -67,44 +67,6 @@ export interface ResolvedRead {
 const MAX_DYNAMIC_BYTE_LENGTH = 1 << 24; // 16 MiB
 
 /**
- * Resolve every bounds obligation the walk emitted, issuing one length read at a time.
- *
- * Deliberately sequential and in path order: for a path like `arr[999][3]`, the inner
- * obligation was derived from an outer index that may not exist, so evaluating it would be
- * meaningless. The outermost failure is the one reported.
- *
- * @remarks
- * The package's own query pipeline does not call this function; it issues the length reads
- * up front and checks them with {@link awaitObligationsInOrder}. This one is exported for
- * callers that drive the read phases themselves, and should be awaited before any value read.
- *
- * @param obligations - The obligations to check, in path order (outermost first).
- * @param read - Reads one slot; called once per obligation, with its `lengthSlot`, and not
- *   called for obligations after the first failure.
- * @throws {IndexOutOfBoundsError} when an index is greater than or equal to the length stored
- *   in its array's slot.
- * @throws {TypeError} when `read` returns a string that is not valid even-length hex.
- * @throws {RangeError} when `read` returns more than 32 bytes.
- */
-export async function resolveObligations(
-  obligations: readonly BoundsObligation[],
-  read: SingleSlotReader
-): Promise<void> {
-  for (const obligation of obligations) {
-    const word = toStorageWord(await read(obligation.lengthSlot));
-    const length = bytesToBigInt(word);
-    if (obligation.index >= length) {
-      throw new IndexOutOfBoundsError(
-        obligation.index,
-        length,
-        obligation.typeLabel,
-        obligation.variableName
-      );
-    }
-  }
-}
-
-/**
  * Phase 1 (and, for long values, phase 2) of the read pipeline.
  *
  * For a `string`/`bytes` plan the header slot is read first. Its low-order byte's least
@@ -140,7 +102,7 @@ export async function resolveReadPlan(
   const header = toStorageWord(await read(plan.headerSlot));
   const lowByte = header[WORD_SIZE - 1] as number;
 
-  if ((lowByte & 1) === 0) {
+  if (!isLongForm(header)) {
     const length = lowByte >> 1;
     if (length > WORD_SIZE - 1) {
       throw new RangeError(
@@ -267,8 +229,7 @@ export function decode(
 }
 
 /**
- * The concurrent counterpart of {@link resolveObligations}: the length reads are already in
- * flight, and are examined strictly in path order.
+ * Check the bounds obligations against length reads already in flight, strictly in path order.
  *
  * Promise `i + 1` is not even awaited until obligation `i` has passed, so a rejected or
  * meaningless inner read (its slot was derived from an outer index that may not exist) can
@@ -319,5 +280,16 @@ export async function awaitObligationsInOrder(
  */
 export function dynamicBytesLength(header: Uint8Array): bigint {
   const lowByte = header[WORD_SIZE - 1] as number;
-  return (lowByte & 1) === 0 ? BigInt(lowByte >> 1) : (bytesToBigInt(header) - 1n) / 2n;
+  return isLongForm(header) ? (bytesToBigInt(header) - 1n) / 2n : BigInt(lowByte >> 1);
+}
+
+/**
+ * Whether a `string`/`bytes` header word is in the long form, where the data lives in
+ * separate slots. The lowest bit of the last byte is set for long, clear for short.
+ *
+ * @param header - The 32-byte header word.
+ * @returns `true` for the long form.
+ */
+export function isLongForm(header: Uint8Array): boolean {
+  return ((header[WORD_SIZE - 1] as number) & 1) === 1;
 }

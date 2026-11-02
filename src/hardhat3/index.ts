@@ -45,7 +45,7 @@
 
 import type { ChainType, DefaultChainType } from 'hardhat/types/network';
 import type { HardhatPlugin } from 'hardhat/types/plugins';
-import type { StorageQueryBuilder } from '../core/index.js';
+import type { StorageQueryBuilder } from '../core/query/StorageQueryBuilder.js';
 
 // Type side only; the property itself is attached by the `network.newConnection` hook in
 // `./hooks/network.ts`.
@@ -95,15 +95,8 @@ export const storageDecoderPlugin: HardhatPlugin = {
 
 export default storageDecoderPlugin;
 
-export {
-  MANUAL_OUTPUT_SELECTION_SNIPPET,
-  MissingStorageLayoutError,
-  STORAGE_LAYOUT_SELECTOR,
-  withStorageLayoutOutputSelection,
-} from './ensureStorageLayoutOutput.js';
-export { Hardhat3LayoutReader } from './readBuildInfo.js';
-export { createGetCode, createGetStorageAt } from './provider.js';
-export { attachStorageDecoder, createStorageDecoderContext } from './storageDecoder.js';
+export { MissingStorageLayoutError } from './ensureStorageLayoutOutput.js';
+export { createStorageDecoderContext } from './storageDecoder.js';
 
 // Re-exported so consumers can `instanceof`-check failures and type their own helpers without
 // reaching for a second import specifier.
@@ -116,26 +109,40 @@ export {
   IndexOutOfBoundsError,
   PathSegmentCountMismatchError,
   PathSegmentKindMismatchError,
+  PrunedStateError,
   StorageDecoderError,
-  StorageQueryBuilder,
   UnsupportedTypeError,
   VariableNotFoundError,
-  // The layout helpers the error messages and `USAGE.md` refer to, for code that parses a
-  // `storageLayout` blob itself.
+  classifyReadFailure,
+} from '../core/query/errors.js';
+export type { RetryOptions, StorageDecoderOptions } from '../core/query/limiter.js';
+export {
+  StorageQueryBuilder,
+  // With `createStorageDecoderContext`, for a decoder with its own limit and retry settings;
+  // `connection.storageDecoder` always uses the defaults.
+  createStorageDecoder,
+} from '../core/query/StorageQueryBuilder.js';
+export type {
+  ByteRange,
+  ExpectedBytecode,
+  StorageDecoderContext,
+  StorageReadResult,
+} from '../core/query/StorageQueryBuilder.js';
+export type { DumpValue, ReadAllOptions, StorageDumpResult } from '../core/query/dump.js';
+export type { RpcErrorClass } from '../core/rpc/classifyRpcError.js';
+export type { BlockTag, GetStorageAt, StorageReadRequest } from '../core/rpc/getStorageAt.js';
+export type { DecodedValue } from '../core/slots/decode.js';
+export type { MappingKeyValue, PathSegment } from '../core/slots/deriveSlot.js';
+// The layout helpers the error messages and `USAGE.md` refer to, for code that parses a
+// `storageLayout` blob itself.
+export {
   extractConstantAndImmutableNames,
   extractDeclaringContracts,
   extractUserDefinedValueTypes,
   parseStorageLayout,
-  type BlockTag,
-  type DecodedValue,
-  type DumpValue,
-  type MappingKeyValue,
-  type ParseStorageLayoutOptions,
-  type ParsedStorageLayout,
-  type PathSegment,
-  type RawStorageLayout,
-  type ReadAllOptions,
-  type StorageDecoderContext,
-  type StorageDumpResult,
-  type StorageReadResult,
-} from '../core/index.js';
+} from '../core/layout/parseStorageLayout.js';
+export type {
+  ParseStorageLayoutOptions,
+  ParsedStorageLayout,
+  RawStorageLayout,
+} from '../core/layout/parseStorageLayout.js';

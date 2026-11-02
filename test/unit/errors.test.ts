@@ -16,6 +16,7 @@ const INSTANCES: Record<string, Error> = {
   AmbiguousVariableError: new core.AmbiguousVariableError('v', ['a.sol:A', 'a.sol:B']),
   PathSegmentCountMismatchError: new core.PathSegmentCountMismatchError('v', 1, 'detail'),
   PathSegmentKindMismatchError: new core.PathSegmentKindMismatchError('v', 0, 'detail'),
+  PrunedStateError: new core.PrunedStateError(5n),
   IndexOutOfBoundsError: new core.IndexOutOfBoundsError(1n, 0n, 'uint256[]'),
   UnsupportedTypeError: new core.UnsupportedTypeError('label', 't_id'),
   DumpTooLargeError: new core.DumpTooLargeError('array', 11n, 10, 'items'),

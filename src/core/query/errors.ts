@@ -10,6 +10,9 @@
  * what a caller reads after an `instanceof` check.
  */
 
+import { isTransportFailure } from '../rpc/classifyRpcError.js';
+import { type BlockTag, isHexQuantity } from '../rpc/getStorageAt.js';
+
 /**
  * Base class of every typed error in this file, and of the layout errors the Hardhat adapters
  * define themselves. `catch (e) { if (e instanceof StorageDecoderError) ... }` matches all of
@@ -18,7 +21,7 @@
  * It does not cover everything the package can raise: malformed arguments (an incomplete
  * chain, a mapping key that does not fit its type, an invalid `readAll()` option) and
  * malformed node responses are reported as plain `TypeError`/`RangeError`, and failures of the
- * provider itself propagate unchanged.
+ * provider itself propagate unchanged, apart from {@link PrunedStateError}.
  */
 export class StorageDecoderError extends Error {
   /**
@@ -81,36 +84,46 @@ export class ContractNotFoundError extends StorageDecoderError {
 }
 
 /**
- * The code deployed at `.target(address)` does not plausibly correspond to `.contract(fqn)`.
+ * The code deployed at `.target(address)` does not correspond to `.contract(fqn)`.
  *
- * The check is a heuristic, not a proof: immutables and the trailing metadata hash legitimately
- * differ between the artifact's `deployedBytecode` and what is on chain, so only byte-length and
- * the first 32 bytes are compared.
+ * The whole of the code is compared with the artifact's `deployedBytecode`, leaving out only what
+ * legitimately differs on chain: the metadata trailer of each side, immutables and library
+ * addresses at the offsets the compiler reports, library placeholders, and the metadata hash of
+ * embedded `new X` creation code where both sides have it at the same offset.
  *
- * Thrown by `read()`, `readMany()`, `readKeys()`, `readIndices()` and `readAll()` in exactly
- * three cases, checked in this order:
- *  - there is no code at the address at the block being read;
- *  - the deployed code's byte length differs from the artifact's `deployedBytecode`;
- *  - the lengths match but the first 32 bytes differ (all of it, when shorter than 32 bytes).
+ * Thrown by `read()`, `readMany()`, `readKeys()`, `readIndices()` and `readAll()` in these cases,
+ * checked in this order:
+ *  - there is no code at the address at the block being read (`reason` is `'no-code'`);
+ *  - with the trailers removed, the deployed code's byte length differs from the artifact's;
+ *  - a reference in the artifact falls outside its code;
+ *  - any other byte differs. Without immutable references (a narrowed `outputSelection`, or a
+ *    context returning a plain string) an immutable differs too; the check is not weakened, and
+ *    `detail` says the references were not supplied.
  *
  * The check only runs when the context supplies both `getCode` and `getDeployedBytecode`, and
  * is skipped when the artifact's `deployedBytecode` is missing or empty (`getCode` is still
  * called then, and a failure of it is still reported).
  *
- * A proxy address read with the implementation's name fails this check; there is no proxy
- * detection.
+ * Different compiler settings produce different code, so a deployment built with another
+ * `evmVersion` or optimizer setting is rejected. The embedded-hash rule looks only at the bytes:
+ * the same marker inside a constant, on both sides at one offset, hides the 34 bytes after it
+ * (32 for a Swarm hash) from the comparison. A proxy address read with the implementation's
+ * name fails this check; there is no proxy detection.
  */
 export class ContractMismatchError extends StorageDecoderError {
   /**
    * @param fullyQualifiedName - The contract whose layout was about to be applied.
    * @param address - The address passed to `.target()`, unchanged.
-   * @param detail - Which of the three comparisons failed, with the byte counts for a length
-   *   difference.
+   * @param detail - Which comparison failed, with the byte counts for a length difference and
+   *   the first differing byte otherwise.
+   * @param reason - `'no-code'` when the address has no code at that block, `'code-differs'` when
+   *   it has code that does not match. Lets a caller tell them apart without reading `detail`.
    */
   constructor(
     readonly fullyQualifiedName: string,
     readonly address: string,
-    readonly detail: string
+    readonly detail: string,
+    readonly reason: 'no-code' | 'code-differs' = 'code-differs'
   ) {
     super(
       `The code deployed at ${address} does not look like "${fullyQualifiedName}": ${detail}.` +
@@ -507,4 +520,93 @@ export class DumpInconsistentError extends StorageDecoderError {
       DumpInconsistentError
     );
   }
+}
+
+/**
+ * The node no longer holds the state of the block being read, so it cannot answer. Raised in place
+ * of the provider's error, which is kept as `cause`.
+ *
+ * Which failures count is decided by `classifyRpcError`: error 4444, and the "missing trie node"
+ * family of wordings. For a block number or hex quantity the message says an archive node is
+ * needed. A named tag such as `latest` is not an old block, and the same wording there can mean a
+ * node that is syncing or unhealthy, so the message only reports what the node said.
+ */
+export class PrunedStateError extends StorageDecoderError {
+  /**
+   * @param blockTag - The block the call was sent with, as the query gave it.
+   * @param cause - The provider's error.
+   */
+  constructor(
+    readonly blockTag: BlockTag,
+    override readonly cause?: unknown
+  ) {
+    super(
+      typeof blockTag === 'string' && !isHexQuantity(blockTag)
+        ? `The node reported that it does not have the state for block tag "${blockTag}". See` +
+            ` "cause" for its message.`
+        : `The node no longer holds the state of block ${String(blockTag)}. Reading it needs an` +
+            ` archive node.`,
+      'PrunedStateError',
+      PrunedStateError
+    );
+  }
+}
+
+// The CommonJS and ES-module builds each define these classes, so `instanceof` fails for an
+// error from the other build; a symbol from the global registry is the same in both.
+const DECODER_ERROR_BRAND = Symbol.for('hardhat-storage-decoder.StorageDecoderError');
+const PRUNED_STATE_ERROR_BRAND = Symbol.for('hardhat-storage-decoder.PrunedStateError');
+Object.defineProperty(StorageDecoderError.prototype, DECODER_ERROR_BRAND, { value: true });
+Object.defineProperty(PrunedStateError.prototype, PRUNED_STATE_ERROR_BRAND, { value: true });
+
+/** Whether `error` is an object carrying `brand`, by itself or through its prototype. */
+function hasBrand(error: unknown, brand: symbol): boolean {
+  return typeof error === 'object' && error !== null && brand in error;
+}
+
+/**
+ * Whether `error` is a {@link StorageDecoderError} from either build of this package.
+ *
+ * @param error - Anything caught.
+ * @returns `true` for that class and every subclass of it.
+ */
+function isStorageDecoderError(error: unknown): boolean {
+  return hasBrand(error, DECODER_ERROR_BRAND);
+}
+
+/**
+ * Whether a failure is what the package or its input got wrong, and never the provider's: an error
+ * of this package, a `RangeError`, or a `TypeError`. A `TypeError` with a transport failure under
+ * it is how Node's `fetch` reports a dropped connection, so it is the exception.
+ *
+ * @param error - The failure.
+ * @returns Whether it says nothing about the RPC call.
+ */
+export function isLocalFailure(error: unknown): boolean {
+  return (
+    isStorageDecoderError(error) ||
+    error instanceof RangeError ||
+    (error instanceof TypeError && !isTransportFailure(error))
+  );
+}
+
+/**
+ * Sort a failed read by what it says about the data, for a consumer that treats them
+ * differently. Works on errors from either build of this package.
+ *
+ * @param error - What a terminal method rejected with.
+ * @returns
+ *  - `'pruned'`: a {@link PrunedStateError}; the data cannot be read from this node;
+ *  - `'wrong-data'`: any other error of this package, or a `TypeError`, `RangeError`,
+ *    `ReferenceError` or `SyntaxError`, which mean bad input, a bad reply, a bug or a corrupt
+ *    local file, never a failure of the RPC call;
+ *  - `'rpc'`: anything else, the provider's error unchanged. That includes a `TypeError` with a
+ *    connection or timeout failure as its cause, which is how Node's `fetch` reports one.
+ */
+export function classifyReadFailure(error: unknown): 'pruned' | 'wrong-data' | 'rpc' {
+  if (hasBrand(error, PRUNED_STATE_ERROR_BRAND)) return 'pruned';
+  if (isLocalFailure(error) || error instanceof ReferenceError || error instanceof SyntaxError) {
+    return 'wrong-data';
+  }
+  return 'rpc';
 }

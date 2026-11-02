@@ -482,7 +482,7 @@ describe('readAll: limits at the boundary', () => {
     });
   });
 
-  it('never has more than 256 storage reads in flight', async () => {
+  it('never has more than the default 16 storage reads in flight', async () => {
     let inFlight = 0;
     let peak = 0;
     const storage = new MockStorage().set(3n, word(2000)); // words.length
@@ -505,7 +505,7 @@ describe('readAll: limits at the boundary', () => {
       .readAll();
 
     expect(result.value).toHaveLength(2000);
-    expect(peak).toBe(256);
+    expect(peak).toBe(16);
   });
 });
 
@@ -650,10 +650,10 @@ describe('readAll: failures part-way through', () => {
     await expect(at(ARRAYS).name('words').at(5).readAll()).rejects.toThrow('element 0 unreadable');
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // One length read and the first window of 256 concurrent reads, plus the few whose turn
+    // One length read and the first window of 16 concurrent reads, plus the few whose turn
     // came while the failure was still propagating — nowhere near all 5000.
     const sent = [...readsOf.values()].reduce((a, b) => a + b, 0);
-    expect(sent).toBeLessThan(2 * 256 + 2);
+    expect(sent).toBeLessThan(2 * 16 + 2);
   });
 
   it('counts the data slots of a long string toward the limit before fetching any', async () => {

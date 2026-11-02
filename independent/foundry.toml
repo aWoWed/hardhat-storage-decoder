@@ -1,0 +1,16 @@
+# The independent build behind `npm run oracle:layout` and `npm run oracle:values`. Its sources
+# are copied into `src/` at the start of each run, so they cannot drift from the originals.
+[profile.default]
+src = "src"
+out = "out"
+cache_path = "cache"
+libs = []
+solc = "0.8.26"
+evm_version = "cancun"
+optimizer = false
+auto_detect_solc = false
+# Without this, `forge build` caches artifacts with no layout, and `forge inspect` then refuses.
+extra_output = ["storageLayout"]
+
+[lint]
+lint_on_build = false
