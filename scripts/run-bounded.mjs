@@ -16,7 +16,8 @@ const TASKKILL_NOT_FOUND = 128;
 /**
  * Ends a process and everything it started.
  *
- * @param {number} pid
+ * @param {number} pid - On POSIX, a process that leads its own group, as `runBounded`'s child does.
+ *   Any other pid names no group, so nothing is killed and the result is true, as for a tree that is gone.
  * @returns {boolean} True when the tree was killed or was already gone; false for a real failure.
  */
 export function killProcessTree(pid) {
