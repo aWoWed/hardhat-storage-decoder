@@ -4,4 +4,3 @@ test/e2e/shared/
 node_modules/
 artifacts/
 cache/
-package-lock.json
