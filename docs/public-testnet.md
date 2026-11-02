@@ -9,8 +9,8 @@ This page holds public data only: addresses, blocks and values. No key, and no R
 ## Addresses
 
 The table below is generated from `deployments/manifest/deployments.json`, and
-`node scripts/check-docs-manifest.mjs` fails if it differs. Addresses appear after deployment. Do not
-take an address for these mocks from anywhere else.
+`node scripts/check-docs-manifest.mjs` fails if it differs. Do not take an address for these mocks from
+anywhere else.
 
 <!-- deployments-table:start -->
 
@@ -711,9 +711,21 @@ git switch main
 git pull
 ```
 
-Only the owner publishes. Use `npm login`, with 2FA, then `npm publish`. **Do not leave an npm
-token in a project `.npmrc`**, where it could be committed or end up in a tarball. After publishing, run
-`npm --prefix deployments/example run read:published`.
+Only the owner releases, and does it by pushing a tag. 1.0.0 was published by hand, with `npm login`
+and 2FA. Every later release is published by `.github/workflows/publish.yml`, through npm trusted
+publishing. After the bump is merged, tag the merge on `main` and push the tag:
+
+```powershell
+git tag v<version>
+git push origin v<version>
+```
+
+The workflow checks that the tag matches both version files and is on `main`, runs `npm run test:unit`
+and `npm run verify:package`, then publishes with a provenance attestation. It needs the trusted
+publisher set on npmjs.com, under the package's settings: user `aWoWed`, repository
+`hardhat-storage-decoder`, workflow `publish.yml`. If you ever publish by hand again, **do not leave an
+npm token in a project `.npmrc`**, where it could be committed or end up in a tarball. After publishing,
+run `npm --prefix deployments/example run read:published`.
 
 ### Reviewing the scheduled read-back
 

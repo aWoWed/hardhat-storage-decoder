@@ -29,9 +29,14 @@ try {
 const READBACK = 'readback.yml';
 const SECRET_SCAN = 'secret-scan.yml';
 const INDEPENDENT = 'independent-checks.yml';
+const PUBLISH = 'publish.yml';
+const REQUIRED_WORKFLOWS = [READBACK, SECRET_SCAN, INDEPENDENT, PUBLISH];
 const GITIGNORE = '.gitignore';
 const RESULT_FOLDERS = ['independent-results', 'readback-results'];
 const NODE_VERSION = '22.14.0';
+/** npm trusted publishing needs npm 11.5.1 or newer, which Node 22.14.0 does not bundle. */
+const PUBLISH_NODE_VERSION = '24.22.2';
+const PUBLISH_MIN_NPM = [11, 5, 1];
 const FOUNDRY_VERSION = 'v1.5.1';
 const MAINNET_CANDIDATES = 'deployments/mainnet/candidates.json';
 const PINNED_ACTION = /^[\w.-]+\/[\w.-]+(?:\/[^@]+)?@[0-9a-f]{40}$/;
@@ -78,14 +83,17 @@ function checkGeneric(name, text, workflow, report) {
     report('pull-request-secrets', `${name} uses a secret and runs on pull requests`);
   }
 
+  // Only the publish job may ask for an OIDC token, which npm trusted publishing trades for a credential.
+  const allowed = name === PUBLISH ? { contents: 'read', 'id-token': 'write' } : { contents: 'read' };
   const permissions = workflow.permissions;
   if (
     permissions === null ||
     typeof permissions !== 'object' ||
-    !sameSet(Object.keys(permissions), ['contents']) ||
-    permissions.contents !== 'read'
+    !sameSet(Object.keys(permissions), Object.keys(allowed)) ||
+    Object.entries(allowed).some(([key, value]) => permissions[key] !== value)
   ) {
-    report('permissions', `${name} must declare exactly permissions: contents: read`);
+    const wanted = Object.entries(allowed).map(([key, value]) => `${key}: ${value}`).join(', ');
+    report('permissions', `${name} must declare exactly permissions: ${wanted}`);
   }
 
   if (/continue-on-error/.test(text)) report('continue-on-error', `${name} hides a failure with continue-on-error`);
@@ -120,9 +128,10 @@ function checkGeneric(name, text, workflow, report) {
     }
   }
 
+  const nodeVersion = name === PUBLISH ? PUBLISH_NODE_VERSION : NODE_VERSION;
   for (const step of actionSteps(workflow, 'actions/setup-node')) {
-    if (String(step.with?.['node-version']) !== NODE_VERSION) {
-      report('node-pin', `${name}: node-version must be ${NODE_VERSION}`);
+    if (String(step.with?.['node-version']) !== nodeVersion) {
+      report('node-pin', `${name}: node-version must be ${nodeVersion}`);
     }
   }
   for (const step of actionSteps(workflow, 'foundry-rs/foundry-toolchain')) {
@@ -280,6 +289,62 @@ function checkIndependent(text, workflow, report) {
   }
 }
 
+function compareVersions(a, b) {
+  for (let i = 0; i < 3; i += 1) {
+    if (a[i] !== b[i]) return a[i] - b[i];
+  }
+  return 0;
+}
+
+/**
+ * The publish job holds an OIDC token that npm accepts as the right to publish, so it runs only from
+ * a pushed tag, checks the tag and the package first, and has no token of its own. Provenance comes
+ * with trusted publishing, so nothing may turn it off.
+ */
+function checkPublish(workflow, report) {
+  const push = workflow.on?.push;
+  if (
+    !sameSet(triggersOf(workflow), ['push']) ||
+    !sameSet(Object.keys(push ?? {}), ['tags']) ||
+    !sameSet(push?.tags ?? [], ['v*'])
+  ) {
+    report('publish-trigger', `${PUBLISH} must run on pushed v* tags only`);
+  }
+  const jobs = Object.values(workflow.jobs ?? {});
+  if (jobs.length !== 1) {
+    report('publish-steps', `${PUBLISH} must be one job, so its checks and the publish share a checkout`);
+  }
+  const npmVersion = String(jobs[0]?.env?.NPM_VERSION);
+  if (!VERSION.test(npmVersion) || compareVersions(npmVersion.split('.').map(Number), PUBLISH_MIN_NPM) < 0) {
+    report('publish-npm', `${PUBLISH}: NPM_VERSION must be exact and at least ${PUBLISH_MIN_NPM.join('.')}`);
+  }
+  if (actionSteps(workflow, 'actions/checkout')[0]?.with?.['fetch-depth'] !== 0) {
+    report('publish-steps', `${PUBLISH}: the checkout needs fetch-depth: 0 to see main`);
+  }
+
+  const runs = stepsOf(workflow).map(({ run }) => run ?? '');
+  const first = (pattern) => runs.findIndex((run) => pattern.test(run));
+  const publish = first(/^\s*npm publish\s*$/m);
+  if (publish === -1) report('publish-steps', `${PUBLISH} must publish with a plain npm publish`);
+  const checks = [
+    ['the tag against both version files', /^\s*node scripts\/check-release-consistency\.mjs "\$\{GITHUB_REF_NAME#v\}"\s*$/m],
+    ['that the tagged commit is on main', /^\s*if ! git merge-base --is-ancestor "\$GITHUB_SHA" origin\/main; then\s*$/m],
+    ['the npm version', /^\s*if \[ "\$\(npm --version\)" != "\$NPM_VERSION" \]; then\s*$/m],
+    ['the unit tests', /^\s*npm run test:unit\s*$/m],
+    ['the package', /^\s*npm run verify:package\s*$/m],
+  ];
+  for (const [label, pattern] of checks) {
+    const at = first(pattern);
+    if (at === -1 || (publish !== -1 && at > publish)) {
+      report('publish-steps', `${PUBLISH} must check ${label} before it publishes`);
+    }
+  }
+  // The parsed workflow, so that the comments may explain provenance.
+  if (/provenance|_authToken|NODE_AUTH_TOKEN|NPM_TOKEN|NPM_CONFIG/i.test(JSON.stringify(workflow))) {
+    report('publish-token', `${PUBLISH} must publish through trusted publishing alone, which also adds provenance`);
+  }
+}
+
 /**
  * The result folders the workflows write into their checkout must be ignored, or the dirty-tree
  * check in `independent-checks.yml` fails every run. A copy of `.github` brings its own `.gitignore`, which
@@ -315,7 +380,7 @@ function checkDirectory(dir) {
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }
-  for (const required of [READBACK, SECRET_SCAN, INDEPENDENT]) {
+  for (const required of REQUIRED_WORKFLOWS) {
     if (!names.includes(required)) report('missing-workflow', `${required} is missing`);
   }
   for (const name of names) {
@@ -335,6 +400,7 @@ function checkDirectory(dir) {
     if (name === READBACK) checkReadback(text, workflow, report);
     if (name === SECRET_SCAN) checkSecretScan(workflow, report);
     if (name === INDEPENDENT) checkIndependent(text, workflow, report);
+    if (name === PUBLISH) checkPublish(workflow, report);
   }
   let config;
   try {
@@ -420,6 +486,22 @@ const BAD_COPIES = [
   ['results folder not ignored', GITIGNORE, 'results-ignored', 'independent-results/\n', ''],
   ['part of a results folder not ignored', GITIGNORE, 'results-ignored', 'readback-results/\n', 'readback-results/\n!readback-results/run.txt\n'],
   ['invalid YAML', READBACK, 'invalid-yaml', 'name: Read-back', 'name: [Read-back'],
+  ['publish on pull requests', PUBLISH, 'publish-trigger', '  push:\n', '  pull_request:\n  push:\n'],
+  ['publish on a pushed branch', PUBLISH, 'publish-trigger', '    tags:\n', '    branches:\n      - main\n    tags:\n'],
+  ['publish on any tag', PUBLISH, 'publish-trigger', "      - 'v*'", "      - '*'"],
+  ['publish with write access', PUBLISH, 'permissions', '  contents: read\n  id-token: write', '  contents: write\n  id-token: write'],
+  ['publish with no OIDC token', PUBLISH, 'permissions', '\n  id-token: write', ''],
+  ['publish given a token', PUBLISH, 'no-secrets', '      - run: npm publish\n', '      - run: npm publish\n        env:\n          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}\n'],
+  ['publish with provenance off', PUBLISH, 'publish-token', '      - run: npm publish\n', '      - run: npm publish\n        env:\n          NPM_CONFIG_PROVENANCE: false\n'],
+  ['publish before the unit tests', PUBLISH, 'publish-steps', '      - run: npm run test:unit\n', '      - run: npm publish\n      - run: npm run test:unit\n'],
+  ['publish without the package checks', PUBLISH, 'publish-steps', 'run: npm run verify:package', 'run: echo skipped'],
+  ['publish of a tag the version files do not match', PUBLISH, 'publish-steps', 'node scripts/check-release-consistency.mjs "${GITHUB_REF_NAME#v}"', 'true'],
+  ['publish of a commit not on main', PUBLISH, 'publish-steps', 'if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then', 'if false; then'],
+  ['publish from a shallow checkout', PUBLISH, 'publish-steps', '          fetch-depth: 0\n', ''],
+  ['publish with npm unchecked', PUBLISH, 'publish-steps', 'if [ "$(npm --version)" != "$NPM_VERSION" ]; then', 'if false; then'],
+  ['publish with npm too old', PUBLISH, 'publish-npm', 'NPM_VERSION: 11.19.1', 'NPM_VERSION: 10.9.2'],
+  ['publish with npm floating', PUBLISH, 'publish-npm', 'NPM_VERSION: 11.19.1', 'NPM_VERSION: latest'],
+  ['publish on Node 22', PUBLISH, 'node-pin', 'node-version: 24.22.2', 'node-version: 22.14.0'],
 ];
 
 function selfTest() {
@@ -428,7 +510,7 @@ function selfTest() {
     [TOML, readFileSync(join(source, TOML), 'utf8')],
     [GITIGNORE, readFileSync(join(ROOT, GITIGNORE), 'utf8').replace(/\r\n/g, '\n')],
   ]);
-  for (const name of [READBACK, SECRET_SCAN, INDEPENDENT]) {
+  for (const name of REQUIRED_WORKFLOWS) {
     originals.set(name, readFileSync(join(source, 'workflows', name), 'utf8').replace(/\r\n/g, '\n'));
   }
   const scratch = mkdtempSync(join(tmpdir(), 'check-workflows-'));
@@ -450,7 +532,7 @@ function selfTest() {
 
     const cases = [
       ...BAD_COPIES.map(([label, file, rule, from, to]) => ({ label, file, rule, from, to })),
-      ...[READBACK, SECRET_SCAN, INDEPENDENT].map((file) => ({ label: `${file} missing`, skip: file, rule: 'missing-workflow' })),
+      ...REQUIRED_WORKFLOWS.map((file) => ({ label: `${file} missing`, skip: file, rule: 'missing-workflow' })),
       { label: 'gitleaks.toml missing', skip: TOML, rule: 'gitleaks-config' },
     ];
     for (const { label, file, rule, from, to, skip } of cases) {

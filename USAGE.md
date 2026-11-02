@@ -195,7 +195,7 @@ different ones in our builds, `paris` and `cancun`.
 
 To try all of this against a real network, see
 [`docs/public-testnet.md`](docs/public-testnet.md): sealed mocks, a read example for each, what each
-kind of check proves, and known limitations. Addresses appear there after deployment.
+kind of check proves, and known limitations. The addresses are listed there.
 
 ## Installation
 

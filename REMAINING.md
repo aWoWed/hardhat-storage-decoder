@@ -9,7 +9,9 @@ results stated in section 0 are newer.
 
 ## 0. Release status for 1.0.0
 
-Not released. `npm run release:gate` has not passed, so AC 28 is not met.
+Released on 2026-11-02. `npm run release:gate` passed all 31 steps on `6e649b2`, the commit before the
+version bump, and the owner published 1.0.0 by hand. That release has no provenance attestation; later
+ones are published by `.github/workflows/publish.yml` (section 1).
 
 Done on 2026-11-02:
 
@@ -21,18 +23,19 @@ Done on 2026-11-02:
 - **Sourcify verification (AC 7): 11 of 11 exact matches.** The gate runs
   `node scripts/check-sourcify.mjs --chain 11155111` again.
 
+- **Geth and Reth evidence (AC 19):** `independent-checks.yml` passed on the push of `6e649b2` to `main`.
+- **The mainnet check (AC 22)** matched 26 of 26 values from three contracts at block 26313450.
+- **Merged to `main` (AC 11)** in pull request #2, and the version bump (AC 29) in pull request #3.
+
 Still outstanding:
 
-- **Geth and Reth evidence for the merged commit (AC 19).** `independent-checks.yml` passed on the pull
-  request, which the gate does not count. It needs a successful run from the push to `main`.
-- **The mainnet check at gate G5 has not run.** The owner runs it with their own archive URL. No
-  report exists, and without one AC 22 stays unmet.
-- **Nothing has been merged to `main`** (AC 11).
-- **The version bump (Step 13b) has not happened.** `package.json` reads 0.2.0 and
-  `package-lock.json` reads 0.1.0. AC 29 needs both at 1.0.0.
-- **`npm publish` has not happened** (section 1).
-- **The fixture baseline in `scripts/release-gate.mjs` must be retired right after 1.0.0 is tagged.**
-  It holds the fixtures unchanged through this release only.
+- **The fixture baseline in `scripts/release-gate.mjs` must be retired**, now that 1.0.0 is tagged.
+  It held the fixtures unchanged through that release only.
+- **The gate is written for 1.0.0.** `RELEASE_VERSION` in `scripts/check-release-consistency.mjs`
+  names it, and the rule for a bump still to come accepts only 0.2.0 (and 0.1.0 in the lock), so the
+  gate needs updating before it can judge another release.
+- **The `fetchJson` test that names the refused connection is flaky.** It failed once in the gate and
+  passed unchanged on a rerun; it races for a port with tests running in parallel.
 - **`npm run bench` was not run** after the concurrency change, because `BENCH_BASELINE` is unset
   (section 3).
 
@@ -44,16 +47,14 @@ succeeded, not just read-back exit 0, because a rejected burst leaves the read-b
 It passes with the bump outstanding, since the bump follows it; `node
 scripts/check-release-consistency.mjs 1.0.0` then holds the bumped commit to both version files.
 `node scripts/release-gate.mjs --preflight` lists what is outstanding without running anything long. The
-gate's rules are tested with fakes in `test/unit/releaseGate.test.ts`. Its real commands ran before
-sealing, where the first 24 steps passed and it stopped at the Geth and Reth evidence, as expected.
-It has not passed.
+gate's rules are tested with fakes in `test/unit/releaseGate.test.ts`. It passed on `6e649b2`.
 
 Also judged by the gate: only the newest `independent-checks.yml` run for the commit counts; a mainnet
 report needs at least one non-zero value per contract; only `package.json` at 0.2.0, and
 `package-lock.json` at 0.1.0 or 0.2.0, count as a bump still to come, so any other version fails. A
 step past its timeout has its whole process tree killed and counts as "could not check".
 
-What changed for a caller on this branch, none of it released:
+What changed for a caller in 1.0.0, compared with 0.2.0, which was never on npm:
 
 - **Stricter address check.** The whole deployed bytecode is compared, ignoring only immutables,
   library addresses and the metadata hash. It used to compare length and the first 32 bytes.
@@ -79,8 +80,16 @@ The mocks use `isSealed`, where the plan said `sealed`: that is a reserved word 
 
 ## 1. `npm publish`
 
-Not done. It needs registry credentials and 2FA. Only the owner runs it, at gate G6.
+1.0.0 was published by the owner by hand, with 2FA. Later releases are published by
+`.github/workflows/publish.yml` when the owner pushes a `v<version>` tag. It checks the tag against both
+version files and `main`, runs `npm run test:unit` and `npm run verify:package`, and publishes through
+npm trusted publishing, which needs no token and adds a provenance attestation. The trusted publisher
+is set on npmjs.com, under the package's settings, for user `aWoWed`, repository
+`hardhat-storage-decoder` and workflow `publish.yml`. The job uses Node 24.22.2, not the 22.14.0 of the
+other workflows, because trusted publishing needs npm 11.5.1 or newer.
 
+- Source maps are no longer built. They embedded the whole TypeScript source and were about 1.2 MB
+  of the 2.1 MB unpacked 1.0.0 package.
 - As of 2026-10-11, before this branch: `npm run verify:package` passed end to end: the dist
   error-name check, `publint`, `@arethetypeswrong/cli` ("No problems found") and
   `npm publish --dry-run` (23 files, about 459 kB packed; `USAGE.md` and `docs/` now ship). The gate
@@ -92,7 +101,6 @@ Not done. It needs registry credentials and 2FA. Only the owner runs it, at gate
   `node10`-resolution consumer project.
 - `publint` passes, with one suggestion: declare `"sideEffects"`. The Hardhat 2 entry has
   import-time side effects, so `false` would be wrong for it.
-- Confirm the package name is still free immediately before publishing.
 
 ## 2. Verification status
 

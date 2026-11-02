@@ -7,10 +7,9 @@ Storage layouts come straight from your project's Hardhat build-info (no depende
 `hardhat-storage-layout`), and slots are derived statically with packing-aware,
 encoding-first keccak256-preimage arithmetic.
 
-> **Status: v1 complete, pre-publish.** The core and both adapters are implemented, with a
-> unit suite and an on-chain e2e suite for each Hardhat major (run against Hardhat 2.29.0 and
-> 3.13.0). `npm publish` itself is a manual step requiring registry credentials — see
-> [Development](#development).
+> **Status: stable, on npm.** The core and both adapters are implemented, with a unit suite and an
+> on-chain e2e suite for each Hardhat major (run against Hardhat 2.29.0 and 3.13.0). Releases are
+> published from GitHub Actions with an npm provenance attestation — see [Development](#development).
 
 ## Install
 
@@ -174,7 +173,7 @@ up with the same value you supplied. See [`USAGE.md`](USAGE.md) for the full rul
 ## Public testnet mocks
 
 [`docs/public-testnet.md`](docs/public-testnet.md) describes sealed mocks with known values, with a
-copyable read for each and what each kind of check proves. Addresses appear there after deployment.
+copyable read for each and what each kind of check proves. The addresses are listed there.
 Sepolia is a demo and a transport check, and its end date is unsettled. Correctness rests on the
 independent oracles and the mainnet check. `npm --prefix deployments/example run read:local` runs
 every read on the page against a local Anvil; the example is in the repository, not the package.
@@ -254,6 +253,11 @@ npm run verify:package    # build, then: error names + load every entrypoint + p
 npm run bench             # timing comparison against the previous release (not part of CI)
 npm run fixtures:generate # regenerate golden layouts with the pinned solc
 ```
+
+Releases are published by `.github/workflows/publish.yml` when a `v<version>` tag is pushed. It
+checks the tag against the version files, runs the unit suite and `npm run verify:package`, and
+publishes through npm trusted publishing, so no npm token exists and each release carries a
+provenance attestation. Check one with `npm audit signatures`.
 
 The build resolves both Hardhat majors at once through an npm-alias + tsconfig `paths`
 mechanism. It is deliberate and not simplifiable — read

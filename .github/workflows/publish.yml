@@ -1,0 +1,50 @@
+# Publishes the package to npm when a v<version> tag is pushed, through npm trusted publishing. npm
+# trades this run's OIDC token for a short-lived publish credential, so no npm token exists anywhere,
+# and attaches a provenance attestation naming this commit and run. The trusted publisher set on
+# npmjs.com names this file, so renaming it stops publishing.
+#
+# Node is 24.22.2 here, not the 22.14.0 of the other workflows: trusted publishing needs npm 11.5.1 or
+# newer, and Node 22.14.0 bundles npm 10. This never runs on pull requests.
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      NPM_VERSION: 11.19.1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.22.2
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Check the tag, the commit and npm
+        shell: bash
+        run: |
+          node scripts/check-release-consistency.mjs "${GITHUB_REF_NAME#v}"
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_REF_NAME is not on main"
+            exit 1
+          fi
+          if [ "$(npm --version)" != "$NPM_VERSION" ]; then
+            echo "::error::npm is $(npm --version), expected $NPM_VERSION"
+            exit 1
+          fi
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test:unit
+      - run: npm run verify:package
+      - run: npm publish
