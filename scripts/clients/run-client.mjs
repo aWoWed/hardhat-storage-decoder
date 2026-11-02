@@ -13,7 +13,7 @@
  *
  * What a client answers for a block above its head and for one it no longer holds is printed, and
  * those wordings feed `src/core/rpc/classifyRpcError.ts`. The node's own accounts send every
- * transaction; there is no key here.
+ * transaction, except on Reth, which cannot create a contract from one: see `key-sender.mjs`.
  */
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -32,8 +32,9 @@ import {
   startAnvil,
 } from '../oracle-common.mjs';
 import { option } from '../cli-option.mjs';
-import { jsonRpc as rpc, sendFromNode, startProcess } from '../local-node.mjs';
+import { jsonRpc as rpc, startProcess } from '../local-node.mjs';
 import { namesExactVersion } from './exact-version.mjs';
+import { keySender } from './key-sender.mjs';
 
 const ANVIL_VERSION = '1.5.1';
 const GETH_VERSION = '1.17.10';
@@ -159,7 +160,8 @@ async function runSuiteOn(name, node, tools) {
   const failures = [];
   const version = await rpc(node.url, 'web3_clientVersion');
   console.log(`client version: ${version}`);
-  const result = await runValueSuite({ url: node.url, tools, perFamily, seed });
+  const makeSender = name === 'reth' ? (account) => keySender(node.url, account) : undefined;
+  const result = await runValueSuite({ url: node.url, tools, perFamily, seed, makeSender });
   for (const { name: where, path, found } of result.mismatches) {
     failures.push(`${where} ${path ?? ''}: ${found.join('; ')}`);
   }
@@ -204,10 +206,12 @@ async function runSuiteOn(name, node, tools) {
     // Whatever the client does here is recorded, not judged: what it keeps is its own setting.
     let blocks = Number(await rpc(node.url, 'eth_blockNumber'));
     while (blocks < BLOCKS_BEFORE_OLD_READ) {
-      await sendFromNode(node.url, result.from, { to: result.from, value: '0x1' });
+      await result.send({ to: result.from, value: '0x1' });
       blocks = Number(await rpc(node.url, 'eth_blockNumber'));
     }
-    console.log(`old block after ${blocks} blocks: ${JSON.stringify(await failureOf(tools.core, node.url, query, address, 1))}`);
+    // `MockValueTypes` is the first deployment. On Reth, funding the key takes block 1.
+    const old = await failureOf(tools.core, node.url, query, address, result.firstDeploymentBlock);
+    console.log(`old block ${result.firstDeploymentBlock} after ${blocks} blocks: ${JSON.stringify(old)}`);
   }
   return failures;
 }

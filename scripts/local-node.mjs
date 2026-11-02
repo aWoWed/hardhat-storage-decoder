@@ -43,13 +43,29 @@ export async function waitForNode(url, attempts = 100, delayMs = 200) {
   return false;
 }
 
+/**
+ * Geth 1.17.10 answers this until its transaction index is built, just after it starts, for a
+ * transaction it has not mined yet. It says nothing about the transaction, so it counts as no receipt.
+ */
+async function receiptOrNull(url, hash) {
+  try {
+    return await jsonRpc(url, 'eth_getTransactionReceipt', [hash]);
+  } catch (error) {
+    if (error.code === -32000 && error.message === 'transaction indexing is in progress') return null;
+    throw error;
+  }
+}
+
 /** A transaction from an account the node holds: no key exists on this side. */
 export async function sendFromNode(url, from, fields) {
-  const hash = await jsonRpc(url, 'eth_sendTransaction', [{ from, ...fields }]);
+  return waitForReceipt(url, await jsonRpc(url, 'eth_sendTransaction', [{ from, ...fields }]));
+}
+
+export async function waitForReceipt(url, hash) {
   const deadline = Date.now() + RECEIPT_WAIT_MS;
   // Anvil mines within milliseconds, and a run sends thousands of these.
   for (let wait = 1; Date.now() < deadline; wait = Math.min(wait * 2, 200)) {
-    const receipt = await jsonRpc(url, 'eth_getTransactionReceipt', [hash]);
+    const receipt = await receiptOrNull(url, hash);
     if (receipt !== null) {
       if (receipt.status !== '0x1') throw new Error(`transaction ${hash} reverted`);
       return receipt;

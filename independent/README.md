@@ -36,5 +36,8 @@ Geth comes from `GETH_BIN`, or from a `.tools/geth.exe` matching a pinned SHA-51
 not downloaded for you). Reth comes from `RETH_BIN`; its release publishes no Windows binary, so
 none is pinned for `.tools/`. Without one of these the client does not run and the exit code is 3.
 
-The Geth and Reth dev-mode flags, and whether each offers an unlocked funded account through
-`eth_accounts`, are untested until they run.
+Both dev modes offer an unlocked funded account through `eth_accounts`. Geth 1.17.10 can answer a
+receipt query just after it starts with `-32000 transaction indexing is in progress`, which counts
+as not mined yet. Reth 2.9.0 refuses every contract creation from such an account with `-32602
+invalid transaction request`, so on Reth the suite sends from a key generated at run time and funded
+by that account: see `scripts/clients/key-sender.mjs`.

@@ -15,7 +15,7 @@ import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildSync } from 'esbuild';
 import { freePort } from '../deployments/shared/free-port.mjs';
-import { ANVIL_NO_PERSISTED_STATES, jsonRpc as rpc, sendFromNode as send, startProcess } from './local-node.mjs';
+import { ANVIL_NO_PERSISTED_STATES, jsonRpc as rpc, sendFromNode, startProcess } from './local-node.mjs';
 
 export const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const INDEPENDENT = join(ROOT, 'independent');
@@ -603,12 +603,15 @@ const showPath = (path) => JSON.stringify(path, (_, value) => (typeof value === 
 /**
  * Seed every mock, seal it, and compare each planned value; then random keys and indices on fresh
  * deployments, written by real transactions. Every read is compared three ways: what was written,
- * what the oracle finds at its own slot, and what the decoder returns.
+ * what the oracle finds at its own slot, and what the decoder returns. The node's account sends
+ * everything, unless `makeSender` turns that account into another sender.
  */
-export async function runValueSuite({ url, tools, perFamily, seed, shift = 0n }) {
+export async function runValueSuite({ url, tools, perFamily, seed, shift = 0n, makeSender }) {
   const { core, plan, compiled } = tools;
-  const [from] = await rpc(url, 'eth_accounts');
-  if (from === undefined) throw Object.assign(new Error('the node holds no account to send from'), { unusable: true });
+  const [account] = await rpc(url, 'eth_accounts');
+  if (account === undefined) throw Object.assign(new Error('the node holds no account to send from'), { unusable: true });
+  const { from, send } =
+    makeSender === undefined ? { from: account, send: (fields) => sendFromNode(url, account, fields) } : await makeSender(account);
 
   const layouts = new Map();
   const layoutOf = (contract) => {
@@ -619,10 +622,12 @@ export async function runValueSuite({ url, tools, perFamily, seed, shift = 0n })
   const fastDecoder = makeDecoder(core, compiled, url, { addressCheck: false });
   const artifactOf = (contract) => compiled.find(fqnOf(contract));
 
+  let firstDeploymentBlock;
   const deploy = async (contract, args = []) => {
     const constructor = artifactOf(contract).abi.find(({ type }) => type === 'constructor');
     const encoded = args.length === 0 ? '' : abiEncode(constructor.inputs, args);
-    const receipt = await send(url, from, { data: `0x${artifactOf(contract).evm.bytecode.object}${encoded}` });
+    const receipt = await send({ data: `0x${artifactOf(contract).evm.bytecode.object}${encoded}` });
+    firstDeploymentBlock ??= Number(receipt.blockNumber);
     return receipt.contractAddress;
   };
   const selectors = new Map();
@@ -658,7 +663,7 @@ export async function runValueSuite({ url, tools, perFamily, seed, shift = 0n })
       addresses[step.contract] = await deploy(step.contract, step.args);
       reads.push({ contract: step.contract, path: { name: 'owner', segments: [] }, expected: from });
     } else {
-      const receipt = await send(url, from, { to: addresses[step.contract], data: await calldata(step.contract, step.fn, step.args) });
+      const receipt = await send({ to: addresses[step.contract], data: await calldata(step.contract, step.fn, step.args) });
       if (step.recordsRevision === true) {
         history.push({ contract: step.contract, path: { name: 'revision', segments: [] }, expected: String(step.args[0]), block: Number(receipt.blockNumber) });
       }
@@ -718,7 +723,7 @@ export async function runValueSuite({ url, tools, perFamily, seed, shift = 0n })
     counts[family] = 0;
     for (let done = 0; done < perFamily; done += group) {
       const writes = Array.from({ length: Math.min(group, perFamily - done) }, () => make());
-      for (const { args } of writes) await send(url, from, { to: address, data: await calldata(contract, fn, args) });
+      for (const { args } of writes) await send({ to: address, data: await calldata(contract, fn, args) });
       const toRead = writes.flatMap(({ reads: of }) => of);
       await inPool(toRead, (read) => check(contract, address, read, false));
       counts[family] += writes.length;
@@ -728,5 +733,5 @@ export async function runValueSuite({ url, tools, perFamily, seed, shift = 0n })
   const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
   console.log(`random keys and indices: seed 0x${seed.toString(16).padStart(8, '0')}, ${Object.keys(counts).length} families, ${total} writes, at least ${Math.min(...Object.values(counts))} per family`);
 
-  return { mismatches, unchecked, beforeDeployment, families: counts, addresses, decoder, from };
+  return { mismatches, unchecked, beforeDeployment, families: counts, addresses, decoder, from, send, firstDeploymentBlock };
 }
