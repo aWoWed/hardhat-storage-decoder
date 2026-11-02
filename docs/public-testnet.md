@@ -14,7 +14,29 @@ take an address for these mocks from anywhere else.
 
 <!-- deployments-table:start -->
 
-No deployment exists yet, so there are no addresses. They appear here after deployment.
+### Sepolia (chain ID 11155111), generation 1
+
+| Contract | Address | Deploy block | Seal block, from which values hold |
+|---|---|---|---|
+| MockValueTypes | [`0xb40E72994fFC3c71450d55C27598c5a54edDA762`](https://sepolia.etherscan.io/address/0xb40E72994fFC3c71450d55C27598c5a54edDA762) | 12045102 | not sealed yet |
+| MockPacked | [`0xF9591D2c69c06E876cAd58bA774F73AC1b48254F`](https://sepolia.etherscan.io/address/0xF9591D2c69c06E876cAd58bA774F73AC1b48254F) | 12045119 | not sealed yet |
+| MockMappings | [`0x08dC97e14FcD82137Eb9f47a282842d72f78b585`](https://sepolia.etherscan.io/address/0x08dC97e14FcD82137Eb9f47a282842d72f78b585) | 12045122 | not sealed yet |
+| MockArrays | [`0x1Cd5b3C3bD27f912098e6aa7b872c010646B2297`](https://sepolia.etherscan.io/address/0x1Cd5b3C3bD27f912098e6aa7b872c010646B2297) | 12045133 | not sealed yet |
+| MockEnums | [`0x7C4A0fBA09082F1062b4435426c5d1632a2fBE21`](https://sepolia.etherscan.io/address/0x7C4A0fBA09082F1062b4435426c5d1632a2fBE21) | 12045144 | not sealed yet |
+| MockStructs | [`0xF445cFc79A62E826429B0B76F1C0C26aFfd95279`](https://sepolia.etherscan.io/address/0xF445cFc79A62E826429B0B76F1C0C26aFfd95279) | 12045149 | not sealed yet |
+| MockStrings | [`0xc8467490C4349556a0e3830a5A1505c7e0199cc6`](https://sepolia.etherscan.io/address/0xc8467490C4349556a0e3830a5A1505c7e0199cc6) | 12045157 | not sealed yet |
+| MockUserTypes | [`0x8c3a7D0732cC7b2828Ce89A684301A1F95A1bafc`](https://sepolia.etherscan.io/address/0x8c3a7D0732cC7b2828Ce89A684301A1F95A1bafc) | 12045162 | not sealed yet |
+| MockInheritance | [`0x9Df507873C62e9318684F492C0c3FE09Bb0BFCdA`](https://sepolia.etherscan.io/address/0x9Df507873C62e9318684F492C0c3FE09Bb0BFCdA) | 12045167 | not sealed yet |
+| MockShadowed | [`0x0d1CcD84d0A7b128eb0C422879F2fD9BB7C3C070`](https://sepolia.etherscan.io/address/0x0d1CcD84d0A7b128eb0C422879F2fD9BB7C3C070) | 12045171 | not sealed yet |
+| MockImmutable | [`0x77EbEd8Af6EC5d0DB10Bf8EaBc69773296c03962`](https://sepolia.etherscan.io/address/0x77EbEd8Af6EC5d0DB10Bf8EaBc69773296c03962) | 12045177 | not sealed yet |
+
+Past values:
+
+| Contract | Variable | Value | At block | Needs an archive node |
+|---|---|---|---|---|
+| MockValueTypes | `revision` | `11` | 12045103 | yes |
+| MockValueTypes | `revision` | `22` | 12045107 | yes |
+| MockValueTypes | `revision` | `33` | 12045111 | yes |
 
 <!-- deployments-table:end -->
 

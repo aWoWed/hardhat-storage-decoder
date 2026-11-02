@@ -396,7 +396,10 @@ async function runFaults(url) {
   check('an unknown major gives exit 2', bad.status === 2);
   const missing = spawnSync('node', [join('scripts', 'readback.mjs'), '--manifest', join(SCRATCH, 'none.json')], { cwd: ROOT, encoding: 'utf8' });
   check('a missing manifest gives exit 2', missing.status === 2);
-  const empty = spawnSync('node', [join('scripts', 'readback.mjs'), '--chain', '11155111'], { cwd: ROOT, encoding: 'utf8' });
+  // A manifest of its own, since the tracked one holds a real Sepolia deployment.
+  const noDeployments = join(SCRATCH, 'no-deployments.json');
+  writeFileSync(noDeployments, JSON.stringify({ schemaVersion: 1, chains: {} }));
+  const empty = spawnSync('node', [join('scripts', 'readback.mjs'), '--chain', '11155111', '--manifest', noDeployments], { cwd: ROOT, encoding: 'utf8' });
   check('a chain with no deployment gives exit 2, and sends nothing', empty.status === 2);
 }
 
